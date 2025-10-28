@@ -24,11 +24,22 @@ class UpdateInformation():
         """
 
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
-        target.mph.setText('{:.1f}'.format(data_source.mph))
-        target.rpm.setText('{:.1f}'.format(data_source.rpm))
+        target.mph.setText('{:.1f} mph'.format(data_source.mph))
+        target.rpm.setText('{:.1f} rpm'.format(data_source.rpm))
+        target.tire_pressure.setText('{:.1f} psi'.format(data_source.tire_pressure))
+        target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
+        target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage))
+        target.fuel_guage.setText('{:.1f}'.format(data_source.fuel_guage))
+        target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
+        target.intake_air_temperature.setText('{:.1f} '.format(data_source.intake_air_temperature))
+        target.intake_air_flow.setText('{:.1f}'.format(data_source.intake_air_flow))
+
         target.hdg.setText('{:.1f} degrees'.format(data_source.hdg))
         target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
         target.lon.setText('{:.5f}'.format(data_source.lon))
+        target.hdop.setText('{:.1f}'.format(data_source.hdop))
+        target.vdop.setText('{:.1f}'.format(data_source.vdop))
+        target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
 
         # -------------------------------------------------------------------------
         #
@@ -216,7 +227,7 @@ class UpdateInformation():
             painter.drawLine(QPoint(95,50), QPoint(85,50))
             painter.drawLine(QPoint(5,50), QPoint(15,50))
             # change the color to red to indicate this direction is north
-            pen.setColor(QColor(150,0,0))
+            pen.setColor(QColor(2,0,0))
             painter.setPen(pen)
             # draw the last line
             painter.drawLine(QPoint(50,5), QPoint(50,15))

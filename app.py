@@ -151,5 +151,5 @@ if __name__ == "__main__":
 
     window = MainWindow()
 
-    window.show()
+    window.showMaximized()
     app.exec()

@@ -12,15 +12,47 @@ class Vehicle:
 
     Initiated with the port and baud rate the radio is connected to
     """
-    def __init__(self, port, baud):
+
+    def __init__(self, port=None, baud=None):
         # serial port variables
         self.port = port
         self.baud = baud
 
-        self.initialize_port()
+        self.initialized = False if self.port == None else True
+
+        if self.initialized:
+            self.initialize_port()
 
         # vehicle data variables
-        
+        self.mph = 0
+        self.rpm = 0
+        self.tire_pressure = 0
+        self.coolant_temperature = 0
+        self.battery_voltage = 0
+        self.fuel_guage = 0
+        self.oil_pressure = 0
+        self.intake_air_temperature = 0
+        self.intake_air_flow = 0
+
+        # IMU data variables
+        self.accel = [0,0,0]
+        self.gyro = [0,0,0]
+        self.magnetometer = [0,0,0]
+
+        # GPS related variables
+        self.hdg = 0
+        self.lat = 0
+        self.lon = 0
+
+        self.gps_hdop = 100
+        self.gps_vdop = 100
+        self.gps_fix_type = 0
+        self.gps_satellites = 0
+
+        self.heartbeat_time = 0.5
+
+        self.location_history = [[27.9785,-82.026],[27.979,-82.0255]]
+
 
     def initialize_port(self):
         try:
@@ -34,14 +66,17 @@ class Vehicle:
             print(f'Error connecting to serial port: {e}')
 
     def update(self, debug=False):
-        # loop through all of the data which is in the receive buffer
-        while self.ser.in_waiting > 0:
-            # get one line from the receive buffer and strip unwanted whitespace
-            response = self.ser.readline().strip()
+        if self.initialized:
+            # loop through all of the data which is in the receive buffer
+            while self.ser.in_waiting > 0:
+                # get one line from the receive buffer and strip unwanted whitespace
+                response = self.ser.readline().strip()
 
-            # if selected, print out response to the console
-            if debug:
-                print(f'Received data: {response}')
+                # if selected, print out response to the console
+                if debug:
+                    print(f'Received data: {response}')
+        else:
+            return None
 
     def send_data(self, message):
         # send data through the serial port

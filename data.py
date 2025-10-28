@@ -17,9 +17,10 @@ from PySide6.QtWidgets import (
 class Data(QWidget):
     def __init__(self):
         super().__init__()
+
         # create a QHBoxLayout to hold all of the elements within the flight view-- orients the main telemetry text display next to the GPS map
-        data_layout = QHBoxLayout()
-        data_layout.setSpacing(0)
+        main_layout = QHBoxLayout()
+        main_layout.setSpacing(0)
 
         # -------------------------------------------------------------------------
         #
@@ -32,43 +33,58 @@ class Data(QWidget):
         information_layout.setSpacing(0)
 
         # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
-        main_info_layout = QGridLayout()
-        main_info_layout.setSpacing(3)
+        car_info_layout = QGridLayout()
+        car_info_layout.setSpacing(3)
 
         # since these need to be reference later, along with all of the labels above containing dynamic information, these need
         # to be fields of the object, initialized with self.<name>
         self.mph = QLabel("-- mph")
         self.rpm = QLabel("--")
-        self.hdg = QLabel("--")
-        self.lat = QLabel("--")
-        self.lon = QLabel("--")
+        self.tire_pressure = QLabel("-- psi")
+        self.coolant_temperature = QLabel("--")
+        self.battery_voltage = QLabel("-- volts")
+        self.fuel_guage = QLabel("--")
+        self.oil_pressure = QLabel("--")
+        self.intake_air_temperature = QLabel("--")
+        self.intake_air_flow = QLabel("--")
+        
         # this object name is purely to set the minimum length of the heading label, to prevent the
         # items moving around when the numbers change
         self.mph.setObjectName("mph")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("Speed: "), QLabel("Engine RPM: "), QLabel("Heading: "), QLabel("Latitude: "), QLabel("Longitude: ")]
+        labels = [QLabel("Speed: "), QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
+                  QLabel("Battery Voltage: "), QLabel("Fuel Guage: "), QLabel("Oil Pressure: "), QLabel("Intake Air Temp: "),
+                  QLabel("Intake Air Flow: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
             label.setObjectName("small")
-            main_info_layout.addWidget(label, i, 0)
+            car_info_layout.addWidget(label, i, 0)
 
         # add the information labels to the QGridLayout
-        main_info_layout.addWidget(self.mph, 0, 1)
-        main_info_layout.addWidget(self.rpm, 1, 1)
-        main_info_layout.addWidget(self.hdg, 2, 1)
-        main_info_layout.addWidget(self.lat, 3, 1)
-        main_info_layout.addWidget(self.lon, 4, 1)
+        car_info_layout.addWidget(self.mph, 0, 1)
+        car_info_layout.addWidget(self.rpm, 1, 1)
+        car_info_layout.addWidget(self.tire_pressure, 2, 1)
+        car_info_layout.addWidget(self.coolant_temperature, 3, 1)
+        car_info_layout.addWidget(self.battery_voltage, 4, 1)
+        car_info_layout.addWidget(self.fuel_guage, 5, 1)
+        car_info_layout.addWidget(self.oil_pressure, 6, 1)
+        car_info_layout.addWidget(self.intake_air_temperature, 7, 1)
+        car_info_layout.addWidget(self.intake_air_flow, 8, 1)
 
         # add the "main_info_layout" QFormLayout to the information layout
-        information_layout.addLayout(main_info_layout)
 
+        # Header for the GCar information
+        information_layout.addWidget(QLabel("Engine Telemetry Information"))
+
+        information_layout.addLayout(car_info_layout)
 
         # -------------------------------------------------------------------------
         #
         # widget and layout for the GPS Map
         #
         # -------------------------------------------------------------------------
+
         map_layout = QVBoxLayout()
         self.gps_map = QLabel()
 
@@ -80,26 +96,61 @@ class Data(QWidget):
 
         # -------------------------------------------------------------------------
         #
-        # The GPS pixmap doesn't change, it only displays data through the tooltip
-        # when the user clicks on it
-        #
-        # This means we do initialize it with the correct pixmap
+        # Layout for the information displayed at the bottom of the image
         #
         # -------------------------------------------------------------------------
-        self.gps = QLabel()
-        #the following block of code loads the pre-scaled png file and assigns it to the QLabel for the gps
-        gps_pixmap = QPixmap()
-        gps_pixmap.load('./images/gps.png')
-        self.gps.setPixmap(gps_pixmap)
-        data_layout.addWidget(self.gps)
+
+        # it's called 'data_layout' because I am running out of names that are different versions of 'information'
+        data_layout = QHBoxLayout()
+
+        # -------------------------------------------------------------------------
+        #
+        # GPS Information
+        #
+        # -------------------------------------------------------------------------
+
+        # Header for the GPS information
+        information_layout.addWidget(QLabel("GPS Information"))
+        
+        # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
+        gps_info_layout = QGridLayout()
+        gps_info_layout.setSpacing(3)
+
+        # since these need to be reference later, along with all of the labels above containing dynamic information, these need
+        # to be fields of the object, initialized with self.<name>
+        self.lat = QLabel("-- degrees")
+        self.lon = QLabel("-- degrees")
+        self.hdg = QLabel("--")
+        self.hdop = QLabel("--")
+        self.vdop = QLabel("--")
+        self.num_satellites = QLabel("--")
+        
+        # this object name is purely to set the minimum length of the heading label, to prevent the
+        # items moving around when the numbers change
+        self.mph.setObjectName("mph")
+
+        # create labels as an array to efficiently add them to the QGridLayout
+        labels = [QLabel("Latitude: "), QLabel("Longitude: "), QLabel("Heading: "), QLabel("HDOP: "), QLabel("VDOP: "), QLabel("# of Satellites: ")]
+        # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
+        for i, label in enumerate(labels):
+            label.setObjectName("small")
+            gps_info_layout.addWidget(label, i, 0)
+
+        # add the information labels to the QGridLayout
+        gps_info_layout.addWidget(self.lat, 0, 1)
+        gps_info_layout.addWidget(self.lon, 1, 1)
+        gps_info_layout.addWidget(self.hdg, 2, 1)
+        gps_info_layout.addWidget(self.hdop, 3, 1)
+        gps_info_layout.addWidget(self.vdop, 4, 1)
+        gps_info_layout.addWidget(self.num_satellites, 5, 1)
+
+        information_layout.addLayout(gps_info_layout)
 
         # this creates a label to display the fix_type of the gps
         self.gps_status = QLabel("No Fix")
         # the object name is assigned to give the object a mimum width, to keep UI elements
         # from jumping when the length of the message changes
-        self.gps_status.setObjectName('gps_status')
-        data_layout.addWidget(self.gps_status)
-
+        information_layout.addWidget(self.gps_status)
 
         # -------------------------------------------------------------------------
         #
@@ -169,7 +220,7 @@ class Data(QWidget):
 
         # -------------------------------------------------------------------------
         #
-        # add the major subsections to the flight view
+        # add the major subsections to the data view
         #
         # -------------------------------------------------------------------------
 
@@ -178,21 +229,18 @@ class Data(QWidget):
         # in order to set the maximum height for the informational display, we need to create a new widget for it
         information_widget = QWidget()
         information_widget.setLayout(information_layout)
-        information_widget.setMaximumHeight(530) #after assigning the layout, set the height
+
         left_side_layout.addWidget(information_widget)
-
-        # add the HUD to the left_side_widget
-        left_side_layout.addWidget(self.hud)
-
         left_side_widget = QWidget()
         left_side_widget.setLayout(left_side_layout)
 
-        # now add the two QVBoxLayouts to the main QHBoxLayou
-        data_layout.addWidget(left_side_widget)
-        data_layout.addLayout(map_layout)
+        # now add the two QVBoxLayouts to the main QHBoxLayout
+        main_layout.addWidget(left_side_widget)
+
+        main_layout.addLayout(map_layout)
 
         # finally, set the layout for the 'self' QWidget to be the data_layout, which contains as sub-layouts all of the items created
-        self.setLayout(data_layout)
+        self.setLayout(main_layout)
 
     def getMapLocations(self):
         """

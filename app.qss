@@ -35,11 +35,6 @@ QLabel#small {
     font: 14pt;
 }
 
-QLabel#gps_status {
-    font: 20pt;
-    font-weight: 600;
-}
-
 QLabel#battery_data {
     min-width: 6em;
 }

@@ -33,9 +33,9 @@ class TopBar(QWidget):
 
         # create a verticle box layout for the title acronym and the title below the acronym
         title_layout = QVBoxLayout()
-        title = QLabel("Lemons Telemetry")
+        title = QLabel("Lemons@Rice")
         title.setObjectName("title") #set the object name so the QSS style sheet can apply to make the text large
-        subtitle = QLabel("Rice University 24 Hour of Lemons Pit Telemetry")
+        subtitle = QLabel("Pit Lane Telemetry Monitor for Rice University 24 Hours of Lemons Car 2025-2026")
         subtitle.setObjectName("small") #set the object name so it can be made smaller
         title_layout.addWidget(title)
         title_layout.addWidget(subtitle)

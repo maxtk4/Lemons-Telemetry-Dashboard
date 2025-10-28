@@ -26,7 +26,7 @@ class UpdateInformation():
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
         target.mph.setText('{:.1f}'.format(data_source.mph))
         target.rpm.setText('{:.1f}'.format(data_source.rpm))
-        target.heading.setText('{:.1f} degrees'.format(data_source.hdg))
+        target.hdg.setText('{:.1f} degrees'.format(data_source.hdg))
         target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
         target.lon.setText('{:.5f}'.format(data_source.lon))
 
@@ -39,10 +39,6 @@ class UpdateInformation():
         # MAVLink reports GPS status as an integer mapping, so this dictionary and string formatting decodes this for the user
         gps_fix_type = {0: 'No GPS', 1: 'No Fix', 2: '2D Fix', 3: '3D Fix'}
         target.gps_status.setText(f'{gps_fix_type[data_source.gps_fix_type]}')
-
-        # also set the tooltip to display for informative information like precision and number of satellites
-        # - again, this is to limit the amount of text on screen to that which is most useful
-        target.gps.setToolTip(f"GPS HDOP: {data_source.gps_hdop}\nGPS VDOP: {data_source.gps_vdop}\n# satellites: {data_source.gps_satellites}")
 
     @staticmethod
     def updateTopBar(data_source, target):
@@ -159,7 +155,41 @@ class UpdateInformation():
             # Draw a circle with an arrow to represent the current plane heading
             #
             # -------------------------------------------------------------------------
+
+            # Draw thicker black background for white compass logo
             pen.setColor(QColor(0,0,0))
+            pen.setWidth(8)
+            # we need to assign the pen object to the painter again to actually change the color
+            painter.setPen(pen)
+
+            painter.drawEllipse(10, 10, 80, 80)
+            
+            # using the heading, calculate the location of each end of the compass's line
+            # convert the heading to radians, since math.sin and math.cos are in radians
+            hdg = (data_source.hdg+90)*(math.pi/180)
+            tip = QPoint(50+35*math.cos(hdg), 50-35*math.sin(hdg))
+            tail = QPoint(50-35*math.cos(hdg), 50+35*math.sin(hdg))
+
+            # the drawLine method takes two points, the ones just created, and draws a line between them with properties defined by the pen
+            painter.drawLine(tip, tail)
+
+            # now draw the arrow point
+            left = QPoint(50+20*math.cos(hdg)-5*math.sin(hdg), 50-20*math.sin(hdg)-5*math.cos(hdg))
+            right = QPoint(50+20*math.cos(hdg)+5*math.sin(hdg), 50-20*math.sin(hdg)+5*math.cos(hdg))
+            # after calculating the location of the end of each line in the arrow point, we can use those and the tip to draw the lines
+            painter.drawLine(tip, left)
+            painter.drawLine(tip, right)
+
+            # this is to add some decoration to the circle in each cardinal direction
+            painter.drawLine(QPoint(50,95), QPoint(50,85))
+            painter.drawLine(QPoint(95,50), QPoint(85,50))
+            painter.drawLine(QPoint(5,50), QPoint(15,50))
+            # draw the last line
+            painter.drawLine(QPoint(50,5), QPoint(50,15))
+
+            # Draw white symbol
+            pen.setColor(QColor(255,255,255))
+            pen.setWidth(2.5)
             # we need to assign the pen object to the painter again to actually change the color
             painter.setPen(pen)
 

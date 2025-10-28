@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QMainWindow,
-    QStackedLayout,
 )
 
 
@@ -80,7 +79,7 @@ class MainWindow(QMainWindow):
         # create a new flight view, and add it to the app layout
         self.data_view = Data()
 
-        app_layout.addLayout(self.data_view)
+        app_layout.addWidget(self.data_view)
 
         # -------------------------------------------------------------------------
         #
@@ -93,10 +92,8 @@ class MainWindow(QMainWindow):
 
         # -------------------------------------------------------------------------
         #
-        # define two timers-- one to get data and update the textual information in the gui,
-        # one to redraw the map
-        #  + the map is only redrawn at 5Hz instead of 20 to improve performance
-        #
+        # define timer for updating the GUI
+        # 
         # -------------------------------------------------------------------------
         self.update_timer = QTimer()
         self.update_timer.setInterval(50)
@@ -137,9 +134,7 @@ class MainWindow(QMainWindow):
             # create a new vehicle to replace the dummy one currently stored by the MainWindow
             self.vehicle = Vehicle(port=str(self.top_bar.port.currentText()), baud=baud)
 
-            self.data_view.vehicle = self.vehicle
-
-            # change the state of the connection button to reflec tthe vehicle has been connected
+            # change the state of the connection button to reflect the vehicle has been connected
             self.top_bar.connect_button.setText("Connected")
             self.top_bar.connect_button.setDisabled(True)
 
@@ -155,5 +150,6 @@ if __name__ == "__main__":
     app.setStyleSheet(Path('app.qss').read_text())
 
     window = MainWindow()
+
     window.show()
     app.exec()

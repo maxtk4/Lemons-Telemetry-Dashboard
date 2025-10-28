@@ -1,0 +1,93 @@
+QWidget {
+    background-color: #fff;
+    padding: 0px;
+    margin: 0px;
+}
+
+QFrame {
+    border-width: 0;
+    border-radius: 0;
+}
+
+QLabel {
+    font: 18pt;
+    font-family: "Helvetica";
+    font-weight: 300;
+    margin: 0px;
+    padding: 0px;
+}
+
+QLabel#title {
+    font: 50pt;
+    font-weight: 1000;
+    padding: 1px 30px 1px 50px;
+}
+
+QLabel#one_inch_text {
+    font: 170pt;
+    font-weight: 1;
+    margin: 0px;
+    padding: 0px;
+    min-width: 2em;
+}
+
+QLabel#small {
+    font: 14pt;
+}
+
+QLabel#gps_status {
+    font: 20pt;
+    font-weight: 600;
+}
+
+QLabel#battery_data {
+    min-width: 6em;
+}
+
+QLabel#mph {
+    min-width: 6em;
+}
+
+QFormLayout#data_layout {
+    margin: 0px;
+}
+
+QTextEdit {
+    max-width: 4em;
+    max-height: 2em;
+    border: 1px solid gray;
+    border-radius: 3px;
+}
+
+/* QComboBox Styling */
+QComboBox {
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 1px 18px 1px 3px;
+    max-width: 12em;
+}
+
+/* QPushButton Styling */
+QPushButton {
+    border: 0px;
+    border-radius: 3px;
+    padding: 1px 18px 1px 20px;
+    max-width: 6em;
+    min-height: 1.5em;
+    font-weight: 600;
+    font: 14pt;
+    text-align: center;
+    background-color: #DDDDDD
+}
+
+QPushButton#navigation {
+    padding: 2px 15px 3px 15px;
+    margin: 0px;
+}
+
+QPushButton:pressed {
+    background-color: #BBBBBB;
+}
+QPushButton:disabled {
+    background-color: #BBBBBB;
+}

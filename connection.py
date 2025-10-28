@@ -33,7 +33,7 @@ class Vehicle:
         except serial.SerialException as e:
             print(f'Error connecting to serial port: {e}')
 
-    def read_data(self, debug=False):
+    def update(self, debug=False):
         # loop through all of the data which is in the receive buffer
         while self.ser.in_waiting > 0:
             # get one line from the receive buffer and strip unwanted whitespace
@@ -87,7 +87,10 @@ if __name__ == "__main__":
     try:
         print("Reading data from serial port:")
         while True:
-            vehicle.read_data(debug=True)
+            vehicle.update(debug=True)
+
+            # wait 1 second before reading data again
+            time.sleep(1)
 
     # make sure to relinquish control over the serial port
     except KeyboardInterrupt:

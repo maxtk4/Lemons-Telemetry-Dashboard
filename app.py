@@ -96,13 +96,13 @@ class MainWindow(QMainWindow):
         # 
         # -------------------------------------------------------------------------
         self.update_timer = QTimer()
-        self.update_timer.setInterval(50)
+        self.update_timer.setInterval(10)
         self.update_timer.timeout.connect(self.update)
         self.update_timer.start()
 
     def update(self):
         # update the data_source with whatever messages have been sent since last time this method was called
-        self.vehicle.update()
+        self.vehicle.update(debug=True)
 
         # call the static function for updating the top bar, since this is always visible
         UpdateInformation.updateTopBar(self.vehicle, self.top_bar)

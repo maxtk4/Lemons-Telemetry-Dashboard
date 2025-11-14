@@ -75,10 +75,56 @@ class Data(QWidget):
         # add the "main_info_layout" QFormLayout to the information layout
 
         # Header for the GCar information
-        information_layout.addWidget(QLabel("Engine Telemetry Information"))
+        information_layout.addWidget(QLabel("Vehicle Sensor Data"))
 
         information_layout.addLayout(car_info_layout)
 
+        # -------------------------------------------------------------------------
+        #
+        # Telemetry sensor information
+        #
+        # -------------------------------------------------------------------------
+        # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
+        telemetry_info_layout = QGridLayout()
+        telemetry_info_layout.setSpacing(3)
+
+
+        self.imu_temperature = QLabel("--")
+        self.alt_temperature = QLabel("--")
+        self.accel_x = QLabel("--")
+        self.accel_y = QLabel("--")
+        self.accel_z = QLabel("--")
+        self.gyro_x = QLabel("--")
+        self.gyro_y = QLabel("--")
+        self.gyro_z = QLabel("--")
+        self.ambient_pressure = QLabel("--")
+
+        # This is bad code-- need to set the minimum width of this stupid label and for some reason "mph"
+        # is what the style name is called
+        self.imu_temperature.setObjectName("mph")
+
+        # create labels as an array to efficiently add them to the QGridLayout
+        labels = [QLabel("IMU Temperature: "), QLabel("Altimeter Temp: "), QLabel("Accel X: "), QLabel("Accel Y: "), QLabel("Accel Z: "),
+                  QLabel("Gyro X: "), QLabel("Gyro Y: "), QLabel("Gyro Z: "), QLabel("Pressure: "),]
+        # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
+        for i, label in enumerate(labels):
+            label.setObjectName("small")
+            telemetry_info_layout.addWidget(label, i, 0)
+
+        telemetry_info_layout.addWidget(self.imu_temperature, 0, 1)
+        telemetry_info_layout.addWidget(self.alt_temperature, 1, 1)
+        telemetry_info_layout.addWidget(self.accel_x, 2, 1)
+        telemetry_info_layout.addWidget(self.accel_y, 3, 1)
+        telemetry_info_layout.addWidget(self.accel_z, 4, 1)
+        telemetry_info_layout.addWidget(self.gyro_x, 5, 1)
+        telemetry_info_layout.addWidget(self.gyro_y, 6, 1)
+        telemetry_info_layout.addWidget(self.gyro_z, 7, 1)
+        telemetry_info_layout.addWidget(self.ambient_pressure, 8, 1)
+
+
+        # Header for the telemetry information
+        information_layout.addWidget(QLabel("Telemetry System Data"))
+        information_layout.addLayout(telemetry_info_layout)
         # -------------------------------------------------------------------------
         #
         # widget and layout for the GPS Map
@@ -228,6 +274,7 @@ class Data(QWidget):
         left_side_layout = QVBoxLayout()
         # in order to set the maximum height for the informational display, we need to create a new widget for it
         information_widget = QWidget()
+        information_widget.setMaximumWidth(300)
         information_widget.setLayout(information_layout)
 
         left_side_layout.addWidget(information_widget)

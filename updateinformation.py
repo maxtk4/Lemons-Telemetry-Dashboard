@@ -42,7 +42,7 @@ class UpdateInformation():
         target.gyro_x.setText('{:.2f}'.format(data_source.gyro[0]))
         target.gyro_y.setText('{:.2f}'.format(data_source.gyro[1]))
         target.gyro_z.setText('{:.2f}'.format(data_source.gyro[2]))
-        target.ambient_pressure.setText('{:.2f}'.format(data_source.ambient_pressure[2]))
+        target.ambient_pressure.setText('{:.2f}'.format(data_source.ambient_pressure))
 
         target.hdg.setText('{:.1f} degrees'.format(data_source.hdg))
         target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful

@@ -35,12 +35,8 @@ QLabel#small {
     font: 14pt;
 }
 
-QLabel#battery_data {
-    min-width: 6em;
-}
-
 QLabel#mph {
-    min-width: 6em;
+    min-width: 8em;
 }
 
 QFormLayout#data_layout {

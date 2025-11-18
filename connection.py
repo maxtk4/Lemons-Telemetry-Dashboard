@@ -37,38 +37,39 @@ class Vehicle:
         self.rx_buffer = bytearray()
 
         # vehicle data variables
-        self.mph = 0
-        self.rpm = 0
-        self.tire_pressure = 0
-        self.coolant_temperature = 0
-        self.battery_voltage = 0
-        self.fuel_guage = 0
-        self.oil_pressure = 0
-        self.intake_air_temperature = 0
-        self.intake_air_flow = 0
+        self.mph = 0.0
+        self.rpm = 0.0
+        self.tire_pressure = 0.0
+        self.coolant_temperature = 0.0
+        self.battery_voltage = 0.0
+        self.fuel_guage = 0.0
+        self.oil_pressure = 0.0
+        self.intake_air_temperature = 0.0
+        self.intake_air_flow = 0.0
 
         # IMU data variables
-        self.accel = [0,0,0]
-        self.gyro = [0,0,0]
-        self.magnetometer = [0,0,0]
+        self.accel = [0.0,0.0,0.0]
+        self.gyro = [0.0,0.0,0.0]
+        self.magnetometer = [0.0,0.0,0.0]
 
         # Barometric Altimeter variables
-        self.dps310_temperature = 0
-        self.ambient_pressure = 0
+        self.dps310_temperature = 0.0
+        self.ambient_pressure = 0.0
 
         # GPS related variables
-        self.hdg = 0
-        self.lat = 0
-        self.lon = 0
+        self.hdg = 0.0
+        self.lat = 0.0
+        self.lon = 0.0
 
         self.hdop = 100
         self.vdop = 100
         self.gps_fix_type = 0
+        self.gps_altitude = 0.0
         self.num_satellites = 0
 
         self.last_heartbeat = time.time()
         self.heartbeat_time = 0
-        self.electronics_temperature = 0
+        self.electronics_temperature = 0.0
 
         self.location_history = [[27.9785,-82.026],[27.979,-82.0255]]
 
@@ -138,7 +139,7 @@ class Vehicle:
             payload_len = self.rx_buffer[1]
             
             # Calculate the total length of the messag Total Length = Start Byte (1) + Length Byte (1) + Payload (payload_len)
-            total_message_len = 2 + payload_len
+            total_message_len = payload_len
             
             # Check if the *entire* message has arrived in our buffer
             if len(self.rx_buffer) < total_message_len:
@@ -168,18 +169,21 @@ class Vehicle:
         if msg[2] == 0x01:
             # We have a new heartbeat message
             self.last_heartbeat = time.time()
+            print('Heartbeat Received')
         elif msg[2] == 0x02:
             # GPS Data
+            print('GPS Data Received')
             self.lat = struct.unpack('<f', bytes(msg[3:7]))[0]
             self.lon = struct.unpack('<f', bytes(msg[7:11]))[0]
+            self.speed = struct.unpack('<f', bytes(msg[11:15]))[0]
+            self.hdg = struct.unpack('<f', bytes(msg[15:19]))[0]
+            self.gps_altitude = struct.unpack('<f', bytes(msg[19:23]))[0]
 
-            self.hdg = struct.unpack('<f', bytes(msg[11:15]))
-
-            self.hdg = struct.unpack('<f', bytes(msg[11:15]))
-
-            self.num_satellites = (int)(bytes(msg[15:16])) # save as an integer
+            self.num_satellites = int.from_bytes(bytes(msg[23:24]), 'big') # save as an integer
+            self.gps_fix_type = int.from_bytes(bytes(msg[24:25]), 'big')
             return None
         elif msg[2] == 0x03:
+            print('IMU Data Received')
             # IMU Data
 
             # Temperature bytes (float)
@@ -196,6 +200,7 @@ class Vehicle:
                             struct.unpack('<f', bytes(msg[27:31]))[0]]
         
         elif msg[2] == 0x04:
+            print('Pressure Data Received')
             # Pressure Data
 
             # Temperature bytes (float)

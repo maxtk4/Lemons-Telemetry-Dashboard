@@ -173,14 +173,9 @@ class Vehicle:
         elif msg[2] == 0x02:
             # GPS Data
             print('GPS Data Received')
-            self.lat = struct.unpack('<f', bytes(msg[3:7]))[0]
-            self.lon = struct.unpack('<f', bytes(msg[7:11]))[0]
-            self.speed = struct.unpack('<f', bytes(msg[11:15]))[0]
-            self.hdg = struct.unpack('<f', bytes(msg[15:19]))[0]
-            self.gps_altitude = struct.unpack('<f', bytes(msg[19:23]))[0]
-
-            self.num_satellites = int.from_bytes(bytes(msg[23:24]), 'big') # save as an integer
-            self.gps_fix_type = int.from_bytes(bytes(msg[24:25]), 'big')
+            self.lat = struct.unpack('<d', bytes(msg[3:11]))[0]
+            self.lon = struct.unpack('<d', bytes(msg[11:19]))[0]
+            
             return None
         elif msg[2] == 0x03:
             print('IMU Data Received')

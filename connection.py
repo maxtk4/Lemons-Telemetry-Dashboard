@@ -36,42 +36,60 @@ class Vehicle:
 
         self.rx_buffer = bytearray()
 
-        # vehicle data variables
-        self.mph = 0.0
-        self.rpm = 0.0
-        self.tire_pressure = 0.0
-        self.coolant_temperature = 0.0
-        self.battery_voltage = 0.0
-        self.fuel_guage = 0.0
-        self.oil_pressure = 0.0
-        self.intake_air_temperature = 0.0
-        self.intake_air_flow = 0.0
+        """
+        Stores data as lists of tuples, where the first item in each tuple is the timestamp when the data was received, and 
+        the second item is the actual data
+        """
+
+        # configuration values
+        self.gps_points = 100
+        self.imu_points = 1000
+        self.barometer_points = 1000
+        self.car_points = 100
+
+
+        # digital values (converted from pulses per second)
+        self.mph = [(0.0, 0.0)]*self.car_points
+        self.rpm = [(0.0, 0.0)]*self.car_points
+        # bluetooth value
+        self.tire_pressure = [(0.0, 0.0)]*self.car_points
+        # analog values (from ADC voltage, filtered w/ a 2nd order butterworth, cutoff of 10Hz)
+        self.coolant_temperature = [(0.0, 0.0)]*self.car_points
+        self.battery_voltage = [(0.0, 0.0)]*self.car_points
+        self.fuel_guage = [(0.0, 0.0)]*self.car_points
+        self.oil_pressure = [(0.0, 0.0)]*self.car_points
+
+        self.car_index = 0
 
         # IMU data variables
-        self.accel = [0.0,0.0,0.0]
-        self.gyro = [0.0,0.0,0.0]
-        self.magnetometer = [0.0,0.0,0.0]
+        self.accel = [(0.0, [0.0,0.0,0.0])]*self.imu_points
+        self.gyro = [(0.0, [0.0,0.0,0.0])]*self.imu_points
+        self.magnetometer = [(0.0, [0.0,0.0,0.0])]*self.imu_points
+        self.imu_temperature = [(0.0, 0.0)]*self.imu_points
+
+        self.imu_index = 0
 
         # Barometric Altimeter variables
-        self.dps310_temperature = 0.0
-        self.ambient_pressure = 0.0
+        self.dps310_temperature = [(0.0, 0.0)]*self.barometer_points
+        self.ambient_pressure = [(0.0, 0.0)]*self.barometer_points
+
+        self.barometer_index = 0
 
         # GPS related variables
         self.hdg = 0.0
-        self.lat = 0.0
-        self.lon = 0.0
-
+        self.lat = [(0.0, 0.0)]*self.gps_points
+        self.lon = [(0.0, 0.0)]*self.gps_points
         self.hdop = 100
         self.vdop = 100
         self.gps_fix_type = 0
         self.gps_altitude = 0.0
         self.num_satellites = 0
 
+        self.gps_index = 0
+
+        # heartbeat variables
         self.last_heartbeat = time.time()
         self.heartbeat_time = 0
-        self.electronics_temperature = 0.0
-
-        self.location_history = [[27.9785,-82.026],[27.979,-82.0255]]
 
 
     def initialize_port(self):
@@ -173,8 +191,11 @@ class Vehicle:
         elif msg[2] == 0x02:
             # GPS Data
             print('GPS Data Received')
-            self.lat = struct.unpack('<d', bytes(msg[3:11]))[0]
-            self.lon = struct.unpack('<d', bytes(msg[11:19]))[0]
+            self.lat[self.gps_index] = (time.time(), struct.unpack('<d', bytes(msg[3:11]))[0])
+            self.lon[self.gps_index] = (time.time(), struct.unpack('<d', bytes(msg[11:19]))[0])
+
+            # wrap around the gps index to zero when it reaches number of points to save
+            self.gps_index = 0 if self.gps_index == self.gps_points-1 else self.gps_index+1
             
             return None
         elif msg[2] == 0x03:
@@ -182,26 +203,32 @@ class Vehicle:
             # IMU Data
 
             # Temperature bytes (float)
-            self.electronics_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
+            self.imu_temperature[self.imu_index] = (time.time(), struct.unpack('<f', bytes(msg[3:7]))[0])
 
             # Acceleration bytes (three floats)
-            self.accel = [struct.unpack('<f', bytes(msg[7:11]))[0],
+            self.accel[self.imu_index] = (time.time(), [struct.unpack('<f', bytes(msg[7:11]))[0],
                             struct.unpack('<f', bytes(msg[11:15]))[0],
-                            struct.unpack('<f', bytes(msg[15:19]))[0]]
+                            struct.unpack('<f', bytes(msg[15:19]))[0]])
             
             # Gyroscope bytes (three floats)
-            self.gyro = [struct.unpack('<f', bytes(msg[19:23]))[0],
+            self.gyro[self.imu_index] = (time.time(), [struct.unpack('<f', bytes(msg[19:23]))[0],
                             struct.unpack('<f', bytes(msg[23:27]))[0],
-                            struct.unpack('<f', bytes(msg[27:31]))[0]]
+                            struct.unpack('<f', bytes(msg[27:31]))[0]])
+            
+            # wrap around the gps index to zero when it reaches number of points to save
+            self.imu_index = 0 if self.imu_index == self.imu_points-1 else self.imu_index+1
         
         elif msg[2] == 0x04:
             print('Pressure Data Received')
             # Pressure Data
 
             # Temperature bytes (float)
-            self.dps310_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
+            self.dps310_temperature[self.barometer_index] = (time.time(), struct.unpack('<f', bytes(msg[3:7]))[0])
             # Pressure bytes (float)
-            self.ambient_pressure = struct.unpack('<f', bytes(msg[7:11]))[0]
+            self.ambient_pressure[self.barometer_index] = (time.time(), struct.unpack('<f', bytes(msg[7:11]))[0])
+
+            # wrap around the gps index to zero when it reaches number of points to save
+            self.barometer_index = 0 if self.barometer_index == self.barometer_points-1 else self.barometer_index+1
             
         return True
 

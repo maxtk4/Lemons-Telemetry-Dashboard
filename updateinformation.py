@@ -24,36 +24,35 @@ class UpdateInformation():
         """
 
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
-        target.mph.setText('{:.1f} mph'.format(data_source.mph[data_source.car_index][1]))
-        target.rpm.setText('{:.1f} rpm'.format(data_source.rpm[data_source.car_index][1]))
-        target.tire_pressure.setText('{:.1f} psi'.format(data_source.tire_pressure[data_source.car_index][1]))
-        target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature[data_source.car_index][1]))
-        target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage[data_source.car_index][1]))
-        target.fuel_guage.setText('{:.1f}'.format(data_source.fuel_guage[data_source.car_index][1]))
-        target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure[data_source.car_index][1]))
+        target.mph.setText('{:.1f} mph'.format(data_source.mph))
+        target.rpm.setText('{:.1f} rpm'.format(data_source.rpm))
+        target.tire_pressure.setText('{:.1f} psi'.format(data_source.tire_pressure))
+        target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
+        target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage))
+        target.fuel_guage.setText('{:.1f}'.format(data_source.fuel_guage))
+        target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
+        target.intake_air_temperature.setText('{:.1f} '.format(data_source.intake_air_temperature))
+        target.intake_air_flow.setText('{:.1f}'.format(data_source.intake_air_flow))
 
-        target.imu_temperature.setText('{:.1f}'.format(data_source.imu_temperature[data_source.imu_index][1]))
-        target.alt_temperature.setText('{:.1f}'.format(data_source.dps310_temperature[data_source.barometer_index][1]))
+        target.imu_temperature.setText('{:.1f}'.format(data_source.electronics_temperature))
+        target.alt_temperature.setText('{:.1f}'.format(data_source.dps310_temperature))
 
-        # accel = data_source.accel[(data_source.accel_index-1) % len(data_source.accel)]
-        accel = data_source.accel[data_source.imu_index][1]
+        accel = data_source.accel[(data_source.accel_index-1) % len(data_source.accel)]
 
         target.accel_x.setText('{:.2f}'.format(accel[0]))
         target.accel_y.setText('{:.2f}'.format(accel[1]))
         target.accel_z.setText('{:.2f}'.format(accel[2]))
 
-        # gyro = data_source.gyro[(data_source.gyro_index-1) % len(data_source.gyro)]
-        gyro = data_source.gyro[data_source.imu_index][1]
+        gyro = data_source.gyro[(data_source.gyro_index-1) % len(data_source.gyro)]
 
         target.gyro_x.setText('{:.2f}'.format(gyro[0]))
         target.gyro_y.setText('{:.2f}'.format(gyro[1]))
         target.gyro_z.setText('{:.2f}'.format(gyro[2]))
-
-        target.ambient_pressure.setText('{:.2f}'.format(data_source.ambient_pressure[data_source.barometer_index][1]))
+        target.ambient_pressure.setText('{:.2f}'.format(data_source.ambient_pressure))
 
         target.hdg.setText('{:.1f} degrees'.format(data_source.hdg))
-        target.lat.setText('{:.5f}'.format(data_source.lat[data_source.gps_index][1])) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
-        target.lon.setText('{:.5f}'.format(data_source.lon[data_source.gps_index][1]))
+        target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
+        target.lon.setText('{:.5f}'.format(data_source.lon))
         target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
 
     @staticmethod
@@ -119,64 +118,56 @@ class UpdateInformation():
             top_y = center[1] - (target_height//2)*zoom_factor
             left_x = center[0] - (target_width//2)*zoom_factor
 
+            # load the history of the location
+            hist = data_source.location_history
+
             # prepare the QPainter object to draw on the map
             painter = QPainter(gps_map_data)
             # the QPen is necessary to set the parameters of the shapes drawn using the QPainter
             pen = QPen()
             pen.setWidth(2)
-            pen.setColor(QColor(0,0,0)) # set it to draw the trajectory history in black
+            pen.setColor(QColor(0,0,0)) # set it to draw the flight history in black
             painter.setPen(pen)
 
-            
-            remaining_lines = data_source.gps_points - 1
+            for i in range(len(hist)):
+                # check if there is a point after this one
+                if i < len(hist)-1:
+                    # get the latitude and longitude of the current point
+                    lat_1 = hist[i][0]
+                    lon_1 = hist[i][1]
+                    # transform GPS coordinates to match up with the map
+                    y_1 = (lat_1-map_top_lat)*(target_height/(map_bottom_lat-map_top_lat))
+                    x_1 = (lon_1-map_left_lon)*(target_width/(map_right_lon-map_left_lon))  
 
-            while remaining_lines > 0:
-                # need to translate from the current gps_index to get the previous gps_points points in order
-                current_point = (data_source.gps_index - remaining_lines)%data_source.gps_points
-                remaining_lines-=1
-                next_point = (data_source.gps_index - remaining_lines)%data_source.gps_points
-                
-                # get the latitude and longitude of the current point
-                lat_1 = data_source.lat[current_point][1] # need to index the tuple to get the location, not the timestamp
-                lon_1 = data_source.lon[current_point][1]
-                # transform GPS coordinates to match up with the map
-                y_1 = (lat_1-map_top_lat)*(target_height/(map_bottom_lat-map_top_lat))
-                x_1 = (lon_1-map_left_lon)*(target_width/(map_right_lon-map_left_lon))  
+                    # now we have coordinates from 0-625 and 0-1000 corresponding to the un-zoomed map (as floats)
+                    # get the difference between these coordinates and the top left corner of the zoomed in rectangle
+                    # then scale by 1/zoom_factor
+                    y_1 = (y_1 - top_y)/zoom_factor
+                    x_1 = (x_1 - left_x)/zoom_factor
 
-                # now we have coordinates from 0-625 and 0-1000 corresponding to the un-zoomed map (as floats)
-                # get the difference between these coordinates and the top left corner of the zoomed in rectangle
-                # then scale by 1/zoom_factor
-                y_1 = (y_1 - top_y)/zoom_factor
-                x_1 = (x_1 - left_x)/zoom_factor
+                    # get the latitude and longitude of the next point
+                    lat_2 = hist[i+1][0]
+                    lon_2 = hist[i+1][1]
+                    # transform the latitude and longitude to useful coordinates on the pixmap
+                    y_2 = (lat_2-map_top_lat)*(target_height/(map_bottom_lat-map_top_lat))
+                    x_2 = (lon_2-map_left_lon)*(target_width/(map_right_lon-map_left_lon))
 
-                # get the latitude and longitude of the next point
-                lat_2 = data_source.lat[next_point][1] # need to index the tuple to get the location, not the timestamp
-                lon_2 = data_source.lon[next_point][1]
-                # transform the latitude and longitude to useful coordinates on the pixmap
-                y_2 = (lat_2-map_top_lat)*(target_height/(map_bottom_lat-map_top_lat))
-                x_2 = (lon_2-map_left_lon)*(target_width/(map_right_lon-map_left_lon))
+                    # now we have coordinates from 0-625 and 0-1000 corresponding to the un-zoomed map (as floats)
+                    # get the difference between these coordinates and the top left corner of the zoomed in rectangle
+                    # then scale by 1/zoom_factor
+                    y_2 = (y_2 - top_y)/zoom_factor
+                    x_2 = (x_2 - left_x)/zoom_factor
 
-                # now we have coordinates from 0-625 and 0-1000 corresponding to the un-zoomed map (as floats)
-                # get the difference between these coordinates and the top left corner of the zoomed in rectangle
-                # then scale by 1/zoom_factor
-                y_2 = (y_2 - top_y)/zoom_factor
-                x_2 = (x_2 - left_x)/zoom_factor
-
-                # -------------------------------------------------------------------------
-                #
-                # Draw the lines using a QPainter created earlier in the method
-                #
-                # -------------------------------------------------------------------------
-
-                # double check this is an actual point and not completely fake
-                if lat_1 != [0,0,0] and lat_2 != [0,0,0]:
+                    # -------------------------------------------------------------------------
+                    #
+                    # Draw the lines using a QPainter created earlier in the method
+                    #
+                    # -------------------------------------------------------------------------
                     painter.drawLine(x_1, y_1, x_2, y_2)
-                else:
-                    remaining_lines = 0
 
             # -------------------------------------------------------------------------
             #
-            # Draw a circle with an arrow to represent the current car heading
+            # Draw a circle with an arrow to represent the current plane heading
             #
             # -------------------------------------------------------------------------
 

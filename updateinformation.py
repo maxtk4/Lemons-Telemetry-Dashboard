@@ -36,24 +36,30 @@ class UpdateInformation():
 
         target.imu_temperature.setText('{:.1f}'.format(data_source.electronics_temperature))
         target.alt_temperature.setText('{:.1f}'.format(data_source.dps310_temperature))
-
-        accel = data_source.accel[(data_source.accel_index-1) % len(data_source.accel)]
-
-        target.accel_x.setText('{:.2f}'.format(accel[0]))
-        target.accel_y.setText('{:.2f}'.format(accel[1]))
-        target.accel_z.setText('{:.2f}'.format(accel[2]))
-
-        gyro = data_source.gyro[(data_source.gyro_index-1) % len(data_source.gyro)]
-
-        target.gyro_x.setText('{:.2f}'.format(gyro[0]))
-        target.gyro_y.setText('{:.2f}'.format(gyro[1]))
-        target.gyro_z.setText('{:.2f}'.format(gyro[2]))
+        target.accel_x.setText('{:.2f}'.format(data_source.accel[0]))
+        target.accel_y.setText('{:.2f}'.format(data_source.accel[1]))
+        target.accel_z.setText('{:.2f}'.format(data_source.accel[2]))
+        target.gyro_x.setText('{:.2f}'.format(data_source.gyro[0]))
+        target.gyro_y.setText('{:.2f}'.format(data_source.gyro[1]))
+        target.gyro_z.setText('{:.2f}'.format(data_source.gyro[2]))
         target.ambient_pressure.setText('{:.2f}'.format(data_source.ambient_pressure))
 
         target.hdg.setText('{:.1f} degrees'.format(data_source.hdg))
         target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
         target.lon.setText('{:.5f}'.format(data_source.lon))
+        target.hdop.setText('{:.1f}'.format(data_source.hdop))
+        target.vdop.setText('{:.1f}'.format(data_source.vdop))
         target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
+
+        # -------------------------------------------------------------------------
+        #
+        # change the gps status value and the GPS tooltip
+        #
+        # -------------------------------------------------------------------------
+
+        # MAVLink reports GPS status as an integer mapping, so this dictionary and string formatting decodes this for the user
+        gps_fix_type = {0: 'No GPS', 1: 'No Fix', 2: '2D Fix', 3: '3D Fix'}
+        target.gps_status.setText(f'{gps_fix_type[data_source.gps_fix_type]}')
 
     @staticmethod
     def updateTopBar(data_source, target):

@@ -90,36 +90,32 @@ class Data(QWidget):
 
 
         self.imu_temperature = QLabel("--")
-        self.alt_temperature = QLabel("--")
         self.accel_x = QLabel("--")
         self.accel_y = QLabel("--")
         self.accel_z = QLabel("--")
         self.gyro_x = QLabel("--")
         self.gyro_y = QLabel("--")
         self.gyro_z = QLabel("--")
-        self.ambient_pressure = QLabel("--")
 
         # This is bad code-- need to set the minimum width of this stupid label and for some reason "mph"
         # is what the style name is called
         self.imu_temperature.setObjectName("mph")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("IMU Temperature: "), QLabel("Altimeter Temp: "), QLabel("Accel X: "), QLabel("Accel Y: "), QLabel("Accel Z: "),
-                  QLabel("Gyro X: "), QLabel("Gyro Y: "), QLabel("Gyro Z: "), QLabel("Pressure: "),]
+        labels = [QLabel("IMU Temperature: "), QLabel("Accel X: "), QLabel("Accel Y: "), QLabel("Accel Z: "),
+                  QLabel("Gyro X: "), QLabel("Gyro Y: "), QLabel("Gyro Z: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
             label.setObjectName("small")
             telemetry_info_layout.addWidget(label, i, 0)
 
         telemetry_info_layout.addWidget(self.imu_temperature, 0, 1)
-        telemetry_info_layout.addWidget(self.alt_temperature, 1, 1)
         telemetry_info_layout.addWidget(self.accel_x, 2, 1)
         telemetry_info_layout.addWidget(self.accel_y, 3, 1)
         telemetry_info_layout.addWidget(self.accel_z, 4, 1)
         telemetry_info_layout.addWidget(self.gyro_x, 5, 1)
         telemetry_info_layout.addWidget(self.gyro_y, 6, 1)
         telemetry_info_layout.addWidget(self.gyro_z, 7, 1)
-        telemetry_info_layout.addWidget(self.ambient_pressure, 8, 1)
 
 
         # Header for the telemetry information

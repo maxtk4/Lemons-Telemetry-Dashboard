@@ -5,6 +5,9 @@ from serial.tools import list_ports
 import sys
 # import time for delays
 import time
+# used for logging information
+import csv
+from pathlib import Path
 
 # for unpacking bytes to floats
 import struct
@@ -37,6 +40,20 @@ class Vehicle:
         self.rx_buffer = bytearray()
 
         current_time = time.time()
+        self.log_folder = f"./logs/{current_time}"
+        
+        # Create a folder to hold the log files for this particular vehicle class
+        Path(self.log_folder).mkdir(parents=True, exist_ok=True)
+
+        with open(self.log_folder +"/imu.csv", 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(['Time','X dot','Y dot','Z dot','Omega X', 'Omega Y', 'Omega Z', 'Temperature'])
+        with open(self.log_folder +"/gps.csv", 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(['Time','Lat','Lon','Heading','Altitude', 'Speed', 'Satellites', 'HDOP'])
+        with open(self.log_folder +"/car.csv", 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(['Time','Speed','Engine RPM','Tire Pressure','Coolant Temperature','Battery Voltage','Fuel Gauge', 'Oil Pressure'])
 
         # vehicle data variables
         self.car_info_time = current_time
@@ -45,7 +62,7 @@ class Vehicle:
         self.tire_pressure = 0.0
         self.coolant_temperature = 0.0
         self.battery_voltage = 0.0
-        self.fuel_guage = 0.0
+        self.fuel_gauge = 0.0
         self.oil_pressure = 0.0
         self.intake_air_temperature = 0.0
         self.intake_air_flow = 0.0
@@ -88,8 +105,6 @@ class Vehicle:
         """
         Reads all available bytes from the serial port (self.ser) and processes
         them to find complete messages.
-        
-        This method is designed to be called in a fast, repeated loop (e.g., every 50ms).
         
         Returns:
             list: A list of complete messages (as bytes objects) found in this cycle.
@@ -181,6 +196,17 @@ class Vehicle:
             self.num_satellites = int.from_bytes(bytes(msg[43:47]), 'little') # uint32_t is little endian on ESP32
             self.hdop = struct.unpack('<d', bytes(msg[47:55]))[0]
 
+            with open(self.log_folder +"/gps.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows([self.gps_time,
+                                  self.lat,
+                                  self.lon,
+                                  self.hdg,
+                                  self.gps_altitude,
+                                  self.gps_speed,
+                                  self.num_satellites,
+                                  self.hdop])
+
         elif msg[2] == 0x03:
             print('IMU Data Received')
             # IMU Data
@@ -198,6 +224,17 @@ class Vehicle:
             self.gyro = [struct.unpack('<f', bytes(msg[19:23]))[0],
                             struct.unpack('<f', bytes(msg[23:27]))[0],
                             struct.unpack('<f', bytes(msg[27:31]))[0]]
+            
+            with open(self.log_folder +"/imu.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows([self.imu_time,
+                                  self.accel[0],
+                                  self.accel[1],
+                                  self.accel[2],
+                                  self.gyro[0],
+                                  self.gyro[1],
+                                  self.gyro[2],
+                                  self.electronics_temperature])
         
         elif msg[2] == 0x04:
             print('Pressure Data Received')

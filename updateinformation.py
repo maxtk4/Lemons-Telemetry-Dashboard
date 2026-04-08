@@ -31,7 +31,7 @@ class UpdateInformation():
         target.tire_pressure.setText('{:.1f} psi'.format(data_source.tire_pressure))
         target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
         target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage))
-        target.fuel_guage.setText('{:.1f}'.format(data_source.fuel_guage))
+        target.fuel_gauge.setText('{:.1f}'.format(data_source.fuel_guage))
         target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
 
         if (data_source.rpm < 1000) or (data_source.rpm > 6000):
@@ -46,8 +46,8 @@ class UpdateInformation():
         if (data_source.battery_voltage < 10):
             target.battery_voltage.setStyleSheet("background-color: red;")
 
-        if (data_source.fuel_guage < 0.5):
-            target.fuel_guage.setStyleSheet("background-color: red;")
+        if (data_source.fuel_gauge < 0.5):
+            target.fuel_gauge.setStyleSheet("background-color: red;")
 
         if (data_source.oil_pressure < 1):
             target.oil_pressure.setStyleSheet("background-color: red;")

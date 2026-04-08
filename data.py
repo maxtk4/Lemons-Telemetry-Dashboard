@@ -47,7 +47,7 @@ class Data(QWidget):
         self.tire_pressure = QLabel("-- psi")
         self.coolant_temperature = QLabel("--")
         self.battery_voltage = QLabel("-- volts")
-        self.fuel_guage = QLabel("--")
+        self.fuel_gauge = QLabel("--")
         self.oil_pressure = QLabel("--")
         
         # this object name is purely to set the minimum length of the heading label, to prevent the
@@ -57,12 +57,12 @@ class Data(QWidget):
         self.tire_pressure.setObjectName("car_data")
         self.coolant_temperature.setObjectName("car_data")
         self.battery_voltage.setObjectName("car_data")
-        self.fuel_guage.setObjectName("car_data")
+        self.fuel_gauge.setObjectName("car_data")
         self.oil_pressure.setObjectName("car_data")
 
         # create labels as an array to efficiently add them to the QGridLayout
         labels = [QLabel("Speed: "), QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
-                  QLabel("Battery Voltage: "), QLabel("Fuel Guage: "), QLabel("Oil Pressure: ")]
+                  QLabel("Battery Voltage: "), QLabel("Fuel Gauge: "), QLabel("Oil Pressure: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
             label.setObjectName("small")
@@ -74,7 +74,7 @@ class Data(QWidget):
         car_info_layout.addWidget(self.tire_pressure, 2, 1)
         car_info_layout.addWidget(self.coolant_temperature, 3, 1)
         car_info_layout.addWidget(self.battery_voltage, 4, 1)
-        car_info_layout.addWidget(self.fuel_guage, 5, 1)
+        car_info_layout.addWidget(self.fuel_gauge, 5, 1)
         car_info_layout.addWidget(self.oil_pressure, 6, 1)
 
         # add the "car_info_layout" QFormLayout to the information layout

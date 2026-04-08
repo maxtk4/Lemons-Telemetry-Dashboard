@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
     QPushButton,
 )
 
+from rolling_chart import StreamingLineChart
+
 class Data(QWidget):
     def __init__(self):
         super().__init__()
@@ -32,6 +34,8 @@ class Data(QWidget):
         information_layout = QVBoxLayout()
         information_layout.setSpacing(0)
 
+        information_layout.setContentsMargins(0, 0, 0, 0)
+
         # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
         car_info_layout = QGridLayout()
         car_info_layout.setSpacing(3)
@@ -45,17 +49,20 @@ class Data(QWidget):
         self.battery_voltage = QLabel("-- volts")
         self.fuel_guage = QLabel("--")
         self.oil_pressure = QLabel("--")
-        self.intake_air_temperature = QLabel("--")
-        self.intake_air_flow = QLabel("--")
         
         # this object name is purely to set the minimum length of the heading label, to prevent the
         # items moving around when the numbers change
-        self.mph.setObjectName("mph")
+        self.mph.setObjectName("car_data")
+        self.rpm.setObjectName("car_data")
+        self.tire_pressure.setObjectName("car_data")
+        self.coolant_temperature.setObjectName("car_data")
+        self.battery_voltage.setObjectName("car_data")
+        self.fuel_guage.setObjectName("car_data")
+        self.oil_pressure.setObjectName("car_data")
 
         # create labels as an array to efficiently add them to the QGridLayout
         labels = [QLabel("Speed: "), QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
-                  QLabel("Battery Voltage: "), QLabel("Fuel Guage: "), QLabel("Oil Pressure: "), QLabel("Intake Air Temp: "),
-                  QLabel("Intake Air Flow: ")]
+                  QLabel("Battery Voltage: "), QLabel("Fuel Guage: "), QLabel("Oil Pressure: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
             label.setObjectName("small")
@@ -69,72 +76,28 @@ class Data(QWidget):
         car_info_layout.addWidget(self.battery_voltage, 4, 1)
         car_info_layout.addWidget(self.fuel_guage, 5, 1)
         car_info_layout.addWidget(self.oil_pressure, 6, 1)
-        car_info_layout.addWidget(self.intake_air_temperature, 7, 1)
-        car_info_layout.addWidget(self.intake_air_flow, 8, 1)
 
-        # add the "main_info_layout" QFormLayout to the information layout
-
-        # Header for the GCar information
-        information_layout.addWidget(QLabel("Vehicle Sensor Data"))
-
+        # add the "car_info_layout" QFormLayout to the information layout
         information_layout.addLayout(car_info_layout)
 
         # -------------------------------------------------------------------------
         #
-        # Telemetry sensor information
-        #
-        # -------------------------------------------------------------------------
-        # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
-        telemetry_info_layout = QGridLayout()
-        telemetry_info_layout.setSpacing(3)
-
-
-        self.imu_temperature = QLabel("--")
-        self.accel_x = QLabel("--")
-        self.accel_y = QLabel("--")
-        self.accel_z = QLabel("--")
-        self.gyro_x = QLabel("--")
-        self.gyro_y = QLabel("--")
-        self.gyro_z = QLabel("--")
-
-        # This is bad code-- need to set the minimum width of this stupid label and for some reason "mph"
-        # is what the style name is called
-        self.imu_temperature.setObjectName("mph")
-
-        # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("IMU Temperature: "), QLabel("Accel X: "), QLabel("Accel Y: "), QLabel("Accel Z: "),
-                  QLabel("Gyro X: "), QLabel("Gyro Y: "), QLabel("Gyro Z: ")]
-        # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
-        for i, label in enumerate(labels):
-            label.setObjectName("small")
-            telemetry_info_layout.addWidget(label, i, 0)
-
-        telemetry_info_layout.addWidget(self.imu_temperature, 0, 1)
-        telemetry_info_layout.addWidget(self.accel_x, 2, 1)
-        telemetry_info_layout.addWidget(self.accel_y, 3, 1)
-        telemetry_info_layout.addWidget(self.accel_z, 4, 1)
-        telemetry_info_layout.addWidget(self.gyro_x, 5, 1)
-        telemetry_info_layout.addWidget(self.gyro_y, 6, 1)
-        telemetry_info_layout.addWidget(self.gyro_z, 7, 1)
-
-
-        # Header for the telemetry information
-        information_layout.addWidget(QLabel("Telemetry System Data"))
-        information_layout.addLayout(telemetry_info_layout)
-        # -------------------------------------------------------------------------
-        #
-        # widget and layout for the GPS Map
+        # Add streaming data charts to the information_layout
         #
         # -------------------------------------------------------------------------
 
-        map_layout = QVBoxLayout()
-        self.gps_map = QLabel()
+        self.accel_x_chart = StreamingLineChart(window_seconds=30, data_label="X Acceleration (m/s^2)")
+        self.accel_x_chart.resize(425, 150)
+        information_layout.addWidget(self.accel_x_chart)
 
-        self.map_dimensions = (1000,625)
-        self.map_center = [self.map_dimensions[0]//2, self.map_dimensions[1]//2]
-        self.map_zoom_factor = 1
+        self.accel_y_chart = StreamingLineChart(window_seconds=30, data_label="Y Acceleration (m/s^2)")
+        self.accel_y_chart.resize(425, 150)
+        information_layout.addWidget(self.accel_y_chart)
 
-        map_layout.addWidget(self.gps_map)
+        self.accel_z_chart = StreamingLineChart(window_seconds=30, data_label="Z Acceleration (m/s^2)")
+        self.accel_z_chart.resize(425, 150)
+        information_layout.addWidget(self.accel_z_chart)
+
 
         # -------------------------------------------------------------------------
         #
@@ -147,12 +110,62 @@ class Data(QWidget):
 
         # -------------------------------------------------------------------------
         #
-        # GPS Information
+        # Telemetry sensor information
+        #
+        # -------------------------------------------------------------------------
+        # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
+        telemetry_info_layout = QGridLayout()
+        telemetry_info_layout.setSpacing(3)
+
+
+        self.accel_x = QLabel("--")
+        self.accel_y = QLabel("--")
+        self.accel_z = QLabel("--")
+        self.gyro_x = QLabel("--")
+        self.gyro_y = QLabel("--")
+        self.gyro_z = QLabel("--")
+
+        # This is bad code-- need to set the minimum width of this stupid label and for some reason "mph"
+        # is what the style name is called
+        self.accel_x.setObjectName("min_width")
+
+        # create labels as an array to efficiently add them to the QGridLayout
+        labels = [QLabel("Accel X: "), QLabel("Accel Y: "), QLabel("Accel Z: "),
+                  QLabel("Gyro X: "), QLabel("Gyro Y: "), QLabel("Gyro Z: ")]
+        # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
+        for i, label in enumerate(labels):
+            label.setObjectName("small")
+            telemetry_info_layout.addWidget(label, i, 0)
+
+        telemetry_info_layout.addWidget(self.accel_x, 0, 1)
+        telemetry_info_layout.addWidget(self.accel_y, 1, 1)
+        telemetry_info_layout.addWidget(self.accel_z, 2, 1)
+        telemetry_info_layout.addWidget(self.gyro_x, 3, 1)
+        telemetry_info_layout.addWidget(self.gyro_y, 4, 1)
+        telemetry_info_layout.addWidget(self.gyro_z, 5, 1)
+
+        data_layout.addLayout(telemetry_info_layout) # add this to the bottom bar below the map
+
+        # -------------------------------------------------------------------------
+        #
+        # widget and layout for the GPS Map
         #
         # -------------------------------------------------------------------------
 
-        # Header for the GPS information
-        information_layout.addWidget(QLabel("GPS Information"))
+        map_layout = QVBoxLayout()
+        self.gps_map = QLabel()
+
+        self.map_dimensions = (950,594)
+        self.map_center = [self.map_dimensions[0]//2, self.map_dimensions[1]//2]
+        self.map_zoom_factor = 1
+
+        map_layout.addWidget(self.gps_map)
+
+        # -------------------------------------------------------------------------
+        #
+        # GPS Information
+        #
+        # -------------------------------------------------------------------------
         
         # QFormLayout is useful for a bunch of labeled information, aka the telemetry data with labels pointing to the updating values
         gps_info_layout = QGridLayout()
@@ -162,17 +175,13 @@ class Data(QWidget):
         # to be fields of the object, initialized with self.<name>
         self.lat = QLabel("-- degrees")
         self.lon = QLabel("-- degrees")
-        self.hdg = QLabel("--")
+        self.hdg = QLabel("-- degrees")
         self.hdop = QLabel("--")
-        self.vdop = QLabel("--")
+        self.gps_speed = QLabel("--")
         self.num_satellites = QLabel("--")
-        
-        # this object name is purely to set the minimum length of the heading label, to prevent the
-        # items moving around when the numbers change
-        self.mph.setObjectName("mph")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("Latitude: "), QLabel("Longitude: "), QLabel("Heading: "), QLabel("HDOP: "), QLabel("VDOP: "), QLabel("# of Satellites: ")]
+        labels = [QLabel("Latitude: "), QLabel("Longitude: "), QLabel("Heading: "), QLabel("HDOP: "), QLabel("GPS Speed: "), QLabel("# of Sats: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
             label.setObjectName("small")
@@ -183,16 +192,10 @@ class Data(QWidget):
         gps_info_layout.addWidget(self.lon, 1, 1)
         gps_info_layout.addWidget(self.hdg, 2, 1)
         gps_info_layout.addWidget(self.hdop, 3, 1)
-        gps_info_layout.addWidget(self.vdop, 4, 1)
+        gps_info_layout.addWidget(self.gps_speed, 4, 1)
         gps_info_layout.addWidget(self.num_satellites, 5, 1)
 
-        information_layout.addLayout(gps_info_layout)
-
-        # this creates a label to display the fix_type of the gps
-        self.gps_status = QLabel("No Fix")
-        # the object name is assigned to give the object a mimum width, to keep UI elements
-        # from jumping when the length of the message changes
-        information_layout.addWidget(self.gps_status)
+        data_layout.addLayout(gps_info_layout)
 
         # -------------------------------------------------------------------------
         #
@@ -256,7 +259,7 @@ class Data(QWidget):
         # to set the size of this widget to ensure sufficient spacing for the GPS map image, we create a widget for it and assign the layout to the widget
         data_widget = QWidget()
         data_widget.setLayout(data_layout)
-        data_widget.setMaximumSize(1000,150)
+        data_widget.setMaximumSize(1000,200)
 
         map_layout.addWidget(data_widget)
 
@@ -270,7 +273,7 @@ class Data(QWidget):
         left_side_layout = QVBoxLayout()
         # in order to set the maximum height for the informational display, we need to create a new widget for it
         information_widget = QWidget()
-        information_widget.setMaximumWidth(300)
+        information_widget.setMaximumWidth(450)
         information_widget.setLayout(information_layout)
 
         left_side_layout.addWidget(information_widget)
@@ -282,7 +285,7 @@ class Data(QWidget):
 
         main_layout.addLayout(map_layout)
 
-        # finally, set the layout for the 'self' QWidget to be the data_layout, which contains as sub-layouts all of the items created
+        # finally, set the layout for the 'self' QWidget to be the main_layout, which contains as sub-layouts all of the items created
         self.setLayout(main_layout)
 
     def getMapLocations(self):

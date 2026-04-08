@@ -36,7 +36,10 @@ class Vehicle:
 
         self.rx_buffer = bytearray()
 
+        current_time = time.time()
+
         # vehicle data variables
+        self.car_info_time = current_time
         self.mph = 0.0
         self.rpm = 0.0
         self.tire_pressure = 0.0
@@ -48,26 +51,22 @@ class Vehicle:
         self.intake_air_flow = 0.0
 
         # IMU data variables
+        self.imu_time = current_time
         self.accel = [0.0,0.0,0.0]
         self.gyro = [0.0,0.0,0.0]
         self.magnetometer = [0.0,0.0,0.0]
 
-        # Barometric Altimeter variables
-        self.dps310_temperature = 0.0
-        self.ambient_pressure = 0.0
-
         # GPS related variables
+        self.gps_time = current_time
         self.hdg = 0.0
         self.lat = 0.0
         self.lon = 0.0
-
         self.hdop = 100
-        self.vdop = 100
-        self.gps_fix_type = 0
+        self.gps_speed = 0.0
         self.gps_altitude = 0.0
         self.num_satellites = 0
 
-        self.last_heartbeat = time.time()
+        self.last_heartbeat = current_time
         self.heartbeat_time = 0
         self.electronics_temperature = 0.0
 
@@ -171,19 +170,21 @@ class Vehicle:
             self.last_heartbeat = time.time()
             print('Heartbeat Received')
         elif msg[2] == 0x02:
+            self.gps_time = time.time()
             # GPS Data
             print('GPS Data Received')
             self.lat = struct.unpack('<d', bytes(msg[3:11]))[0]
             self.lon = struct.unpack('<d', bytes(msg[11:19]))[0]
-            self.speed = struct.unpack('<d', bytes(msg[19:27]))[0]
+            self.gps_speed = struct.unpack('<d', bytes(msg[19:27]))[0]
             self.hdg = struct.unpack('<d', bytes(msg[27:35]))[0]
             self.gps_altitude = struct.unpack('<d', bytes(msg[35:43]))[0]
-
             self.num_satellites = int.from_bytes(bytes(msg[43:47]), 'little') # uint32_t is little endian on ESP32
+            self.hdop = struct.unpack('<d', bytes(msg[47:55]))[0]
 
         elif msg[2] == 0x03:
             print('IMU Data Received')
             # IMU Data
+            self.imu_time = time.time()
 
             # Temperature bytes (float)
             self.electronics_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
@@ -202,10 +203,10 @@ class Vehicle:
             print('Pressure Data Received')
             # Pressure Data
 
-            # Temperature bytes (float)
-            self.dps310_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
-            # Pressure bytes (float)
-            self.ambient_pressure = struct.unpack('<f', bytes(msg[7:11]))[0]
+            # # Temperature bytes (float)
+            # self.dps310_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
+            # # Pressure bytes (float)
+            # self.ambient_pressure = struct.unpack('<f', bytes(msg[7:11]))[0]
             
         return True
 

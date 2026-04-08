@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         # this DataHandler __init__() without any parameters generates randomly updating data for testing
         self.vehicle = Vehicle()
 
-        self.setWindowTitle("Rice University 24 Hour of Lemons Pit Telemetry")
+        self.setWindowTitle("Rice University 24 Hour of Lemons Telemetry Dashboard")
 
         # create a QWidget and QLayout to hold all of the sub-layouts and widgets for the application
         app = QWidget()

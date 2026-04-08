@@ -14,6 +14,8 @@ from PySide6.QtCore import (
     QLine,
 )
 
+import time
+
 
 class UpdateInformation():
     @staticmethod
@@ -31,10 +33,27 @@ class UpdateInformation():
         target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage))
         target.fuel_guage.setText('{:.1f}'.format(data_source.fuel_guage))
         target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
-        target.intake_air_temperature.setText('{:.1f} '.format(data_source.intake_air_temperature))
-        target.intake_air_flow.setText('{:.1f}'.format(data_source.intake_air_flow))
 
-        target.imu_temperature.setText('{:.1f}'.format(data_source.electronics_temperature))
+        if (data_source.rpm < 1000) or (data_source.rpm > 6000):
+            target.rpm.setStyleSheet("background-color: red;")
+        
+        if (data_source.tire_pressure < 10):
+            target.tire_pressure.setStyleSheet("background-color: red;")
+        
+        if (data_source.coolant_temperature > 1.5):
+            target.tire_pressure.setStyleSheet("background-color: red;")
+
+        if (data_source.battery_voltage < 10):
+            target.battery_voltage.setStyleSheet("background-color: red;")
+
+        if (data_source.fuel_guage < 0.5):
+            target.fuel_guage.setStyleSheet("background-color: red;")
+
+        if (data_source.oil_pressure < 1):
+            target.oil_pressure.setStyleSheet("background-color: red;")
+        
+
+        # target.imu_temperature.setText('{:.1f}'.format(data_source.electronics_temperature)) --> currently not including
         target.accel_x.setText('{:.2f}'.format(data_source.accel[0]))
         target.accel_y.setText('{:.2f}'.format(data_source.accel[1]))
         target.accel_z.setText('{:.2f}'.format(data_source.accel[2]))
@@ -46,18 +65,13 @@ class UpdateInformation():
         target.lat.setText('{:.5f}'.format(data_source.lat)) #latitude and longitutde are kind of irrelevant for text display, but they might be useful
         target.lon.setText('{:.5f}'.format(data_source.lon))
         target.hdop.setText('{:.1f}'.format(data_source.hdop))
-        target.vdop.setText('{:.1f}'.format(data_source.vdop))
+        target.gps_speed.setText('{:.1f}'.format(data_source.gps_speed))
         target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
 
-        # -------------------------------------------------------------------------
-        #
-        # change the gps status value and the GPS tooltip
-        #
-        # -------------------------------------------------------------------------
-
-        # MAVLink reports GPS status as an integer mapping, so this dictionary and string formatting decodes this for the user
-        gps_fix_type = {0: 'No GPS', 1: 'No Fix', 2: '2D Fix', 3: '3D Fix'}
-        target.gps_status.setText(f'{gps_fix_type[data_source.gps_fix_type]}')
+        # update the acceleration charts
+        target.accel_x_chart.add_point(time.time(), data_source.accel[0])
+        target.accel_y_chart.add_point(time.time(), data_source.accel[1])
+        target.accel_z_chart.add_point(time.time(), data_source.accel[2])
 
     @staticmethod
     def updateTopBar(data_source, target):
@@ -81,11 +95,11 @@ class UpdateInformation():
             target.connect_button.setDisabled(False)
 
     @staticmethod
-    def updateMap(data_source, target, center = [500,400], zoom_factor = 0.5):
+    def updateMap(data_source, target, center = [475,297], zoom_factor = 0.5):
         """
         maps must have an aspect ratio of 8:5
 
-        center = (x, y) defined on a width of 1000 by height of 625
+        center = (x, y) defined on a width of 950 by height of 594
         
         """
         # -------------------------------------------------------------------------
@@ -114,11 +128,11 @@ class UpdateInformation():
         crop_rect = QRect(int(center[0]*(width/target_width)-zoom_factor*(width/2)),
                           int(center[1]*(height/target_height)-zoom_factor*(height/2)),
                           int(zoom_factor*width), int(zoom_factor*height))
-        # use to bounding box to crop into the image, and then scale to the correct width (and height) of 1000 (and 800)
-        gps_map_data = gps_map_data.copy(crop_rect).scaledToWidth(1000)
+        # use to bounding box to crop into the image, and then scale to the correct width (and height) of 950 (and 594)
+        gps_map_data = gps_map_data.copy(crop_rect).scaledToWidth(950)
         
         if data_source is not None:
-            # find the coordinates of the top left corner on a 1000 (height) x 625 (width) scale
+            # find the coordinates of the top left corner on a 950 (height) x 594 (width) scale
             top_y = center[1] - (target_height//2)*zoom_factor
             left_x = center[0] - (target_width//2)*zoom_factor
 

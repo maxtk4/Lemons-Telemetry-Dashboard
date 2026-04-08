@@ -23,20 +23,19 @@ QLabel#title {
     padding: 1px 30px 1px 50px;
 }
 
-QLabel#one_inch_text {
-    font: 170pt;
-    font-weight: 1;
-    margin: 0px;
-    padding: 0px;
-    min-width: 2em;
-}
-
 QLabel#small {
     font: 14pt;
 }
 
-QLabel#mph {
+QLabel#min_width {
     min-width: 8em;
+}
+
+QLabel#car_data {
+    min-width: 8em;
+    font: 22px;
+    font-weight: 600;
+    padding: 2px;
 }
 
 QFormLayout#data_layout {

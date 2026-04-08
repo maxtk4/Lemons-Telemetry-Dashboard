@@ -35,7 +35,7 @@ class TopBar(QWidget):
         title_layout = QVBoxLayout()
         title = QLabel("Lemons@Rice")
         title.setObjectName("title") #set the object name so the QSS style sheet can apply to make the text large
-        subtitle = QLabel("Pit Lane Telemetry Monitor for Rice University 24 Hours of Lemons Car 2025-2026")
+        subtitle = QLabel("Telemetry Dashboard for Rice University 24 Hours of Lemons Car 2025-2026")
         subtitle.setObjectName("small") #set the object name so it can be made smaller
         title_layout.addWidget(title)
         title_layout.addWidget(subtitle)

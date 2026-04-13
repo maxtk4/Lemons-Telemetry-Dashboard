@@ -44,7 +44,6 @@ class Data(QWidget):
         # to be fields of the object, initialized with self.<name>
         # self.mph = QLabel("-- mph")
         self.rpm = QLabel("--")
-        self.tire_pressure = QLabel("-- psi")
         self.coolant_temperature = QLabel("--")
         self.battery_voltage = QLabel("-- volts")
         self.fuel_gauge = QLabel("--")
@@ -54,14 +53,13 @@ class Data(QWidget):
         # items moving around when the numbers change
         # self.mph.setObjectName("car_data")
         self.rpm.setObjectName("car_data")
-        self.tire_pressure.setObjectName("car_data")
         self.coolant_temperature.setObjectName("car_data")
         self.battery_voltage.setObjectName("car_data")
         self.fuel_gauge.setObjectName("car_data")
         self.oil_pressure.setObjectName("car_data")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
+        labels = [QLabel("Engine RPM: "), QLabel("Coolant Temperature: "),
                   QLabel("Battery Voltage: "), QLabel("Fuel Gauge: "), QLabel("Oil Pressure: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
@@ -71,11 +69,10 @@ class Data(QWidget):
         # add the information labels to the QGridLayout
         # car_info_layout.addWidget(self.mph, 0, 1)
         car_info_layout.addWidget(self.rpm, 0, 1)
-        car_info_layout.addWidget(self.tire_pressure, 1, 1)
-        car_info_layout.addWidget(self.coolant_temperature, 2, 1)
-        car_info_layout.addWidget(self.battery_voltage, 3, 1)
-        car_info_layout.addWidget(self.fuel_gauge, 4, 1)
-        car_info_layout.addWidget(self.oil_pressure, 5, 1)
+        car_info_layout.addWidget(self.coolant_temperature, 1, 1)
+        car_info_layout.addWidget(self.battery_voltage, 2, 1)
+        car_info_layout.addWidget(self.fuel_gauge, 3, 1)
+        car_info_layout.addWidget(self.oil_pressure, 4, 1)
 
         # add the "car_info_layout" QFormLayout to the information layout
         information_layout.addLayout(car_info_layout)
@@ -86,17 +83,17 @@ class Data(QWidget):
         #
         # -------------------------------------------------------------------------
 
-        self.accel_x_chart = StreamingLineChart(window_seconds=30, data_label="X Acceleration (m/s^2)")
-        self.accel_x_chart.resize(425, 150)
-        information_layout.addWidget(self.accel_x_chart)
+        self.lateral_accel_chart = StreamingLineChart(window_seconds=30, label1="Lateral Acceleration", label2="Steering Input")
+        self.lateral_accel_chart.resize(425, 150)
+        information_layout.addWidget(self.lateral_accel_chart)
 
-        self.accel_y_chart = StreamingLineChart(window_seconds=30, data_label="Y Acceleration (m/s^2)")
-        self.accel_y_chart.resize(425, 150)
-        information_layout.addWidget(self.accel_y_chart)
+        self.forward_accel_chart = StreamingLineChart(window_seconds=30, label1="Forward Acceleration")
+        self.forward_accel_chart.resize(425, 150)
+        information_layout.addWidget(self.forward_accel_chart)
 
-        self.accel_z_chart = StreamingLineChart(window_seconds=30, data_label="Z Acceleration (m/s^2)")
-        self.accel_z_chart.resize(425, 150)
-        information_layout.addWidget(self.accel_z_chart)
+        self.throttle_brake_chart = StreamingLineChart(window_seconds=30, label1="Throttle Input", label2="Brake Input")
+        self.throttle_brake_chart.resize(425, 150)
+        information_layout.addWidget(self.throttle_brake_chart)
 
 
         # -------------------------------------------------------------------------

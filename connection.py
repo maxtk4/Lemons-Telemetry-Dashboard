@@ -70,9 +70,6 @@ class Vehicle:
         self.fuel_gauge = 0.0
         self.oil_pressure = 0.0
 
-        # bluetooth sensors
-        self.tire_pressure = 0.0
-
         # IMU data variables
         self.imu_time = current_time
         self.accel = [0.0,0.0,0.0]
@@ -92,6 +89,12 @@ class Vehicle:
         self.last_heartbeat = current_time
         self.heartbeat_time = 0
         self.electronics_temperature = 0.0
+
+        # Driver Input Sensors
+        self.driver_time = current_time
+        self.steering_angle = 0.0
+        self.throttle = 0.0
+        self.brake = 0.0
 
         self.location_history = deque(maxlen=240)
 

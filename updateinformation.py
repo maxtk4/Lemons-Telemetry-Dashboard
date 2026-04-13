@@ -28,7 +28,6 @@ class UpdateInformation():
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
         # target.mph.setText('{:.1f}'.format(data_source.mph))
         target.rpm.setText('{:.1f}'.format(data_source.rpm))
-        target.tire_pressure.setText('{:.1f}'.format(data_source.tire_pressure))
         target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
         target.battery_voltage.setText('{:.1f}'.format(data_source.battery_voltage))
         target.fuel_gauge.setText('{:.1f}'.format(data_source.fuel_gauge))
@@ -69,9 +68,13 @@ class UpdateInformation():
         target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
 
         # update the acceleration charts
-        target.accel_x_chart.add_point(time.time(), data_source.accel[0])
-        target.accel_y_chart.add_point(time.time(), data_source.accel[1])
-        target.accel_z_chart.add_point(time.time(), data_source.accel[2])
+        target.lateral_accel_chart.add_point_stream1(data_source.imu_time, data_source.accel[0])
+        target.lateral_accel_chart.add_point_stream2(data_source.driver_time, data_source.steering_angle)
+
+        target.forward_accel_chart.add_point_stream1(data_source.imu_time, data_source.accel[2]) # Z acceleration is forward
+        
+        target.throttle_brake_chart.add_point_stream1(data_source.driver_time, data_source.throttle)
+        target.throttle_brake_chart.add_point_stream2(data_source.driver_time, data_source.brake)
 
     @staticmethod
     def updateTopBar(data_source, target):

@@ -26,31 +26,31 @@ class UpdateInformation():
         """
 
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
-        target.mph.setText('{:.1f} mph'.format(data_source.mph))
-        target.rpm.setText('{:.1f} rpm'.format(data_source.rpm))
-        target.tire_pressure.setText('{:.1f} psi'.format(data_source.tire_pressure))
+        # target.mph.setText('{:.1f}'.format(data_source.mph))
+        target.rpm.setText('{:.1f}'.format(data_source.rpm))
+        target.tire_pressure.setText('{:.1f}'.format(data_source.tire_pressure))
         target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
-        target.battery_voltage.setText('{:.1f} volts'.format(data_source.battery_voltage))
-        target.fuel_gauge.setText('{:.1f}'.format(data_source.fuel_guage))
+        target.battery_voltage.setText('{:.1f}'.format(data_source.battery_voltage))
+        target.fuel_gauge.setText('{:.1f}'.format(data_source.fuel_gauge))
         target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
 
-        if (data_source.rpm < 1000) or (data_source.rpm > 6000):
-            target.rpm.setStyleSheet("background-color: red;")
+        # if (data_source.rpm < 1000) or (data_source.rpm > 6000):
+        #     target.rpm.setStyleSheet("background-color: red;")
         
-        if (data_source.tire_pressure < 10):
-            target.tire_pressure.setStyleSheet("background-color: red;")
+        # if (data_source.tire_pressure < 10):
+        #     target.tire_pressure.setStyleSheet("background-color: red;")
         
-        if (data_source.coolant_temperature > 1.5):
-            target.tire_pressure.setStyleSheet("background-color: red;")
+        # if (data_source.coolant_temperature > 1.5):
+        #     target.tire_pressure.setStyleSheet("background-color: red;")
 
-        if (data_source.battery_voltage < 10):
-            target.battery_voltage.setStyleSheet("background-color: red;")
+        # if (data_source.battery_voltage < 10):
+        #     target.battery_voltage.setStyleSheet("background-color: red;")
 
-        if (data_source.fuel_gauge < 0.5):
-            target.fuel_gauge.setStyleSheet("background-color: red;")
+        # if (data_source.fuel_gauge < 0.5):
+        #     target.fuel_gauge.setStyleSheet("background-color: red;")
 
-        if (data_source.oil_pressure < 1):
-            target.oil_pressure.setStyleSheet("background-color: red;")
+        # if (data_source.oil_pressure < 1):
+        #     target.oil_pressure.setStyleSheet("background-color: red;")
         
 
         # target.imu_temperature.setText('{:.1f}'.format(data_source.electronics_temperature)) --> currently not including
@@ -136,8 +136,8 @@ class UpdateInformation():
             top_y = center[1] - (target_height//2)*zoom_factor
             left_x = center[0] - (target_width//2)*zoom_factor
 
-            # load the history of the location
-            hist = data_source.location_history
+            # load the history of the location into a list
+            hist = list(data_source.location_history)
 
             # prepare the QPainter object to draw on the map
             painter = QPainter(gps_map_data)

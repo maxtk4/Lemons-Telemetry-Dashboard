@@ -9,6 +9,9 @@ import time
 import csv
 from pathlib import Path
 
+# rolling list of length 240 items for GPS location tracking
+from collections import deque
+
 # for unpacking bytes to floats
 import struct
 
@@ -47,25 +50,28 @@ class Vehicle:
 
         with open(self.log_folder +"/imu.csv", 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerows(['Time','X dot','Y dot','Z dot','Omega X', 'Omega Y', 'Omega Z', 'Temperature'])
+            writer.writerow(['Time','X dot','Y dot','Z dot','Omega X', 'Omega Y', 'Omega Z', 'Temperature'])
         with open(self.log_folder +"/gps.csv", 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerows(['Time','Lat','Lon','Heading','Altitude', 'Speed', 'Satellites', 'HDOP'])
+            writer.writerow(['Time','Lat','Lon','Heading','Altitude', 'Speed', 'Satellites', 'HDOP'])
         with open(self.log_folder +"/car.csv", 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerows(['Time','Speed','Engine RPM','Tire Pressure','Coolant Temperature','Battery Voltage','Fuel Gauge', 'Oil Pressure'])
+            writer.writerow(['Time','Speed','Engine RPM','Tire Pressure','Coolant Temperature','Battery Voltage','Fuel Gauge', 'Oil Pressure'])
 
         # vehicle data variables
-        self.car_info_time = current_time
-        self.mph = 0.0
+        
+        # Interrupt driven values
+        # self.mph = 0.0
         self.rpm = 0.0
-        self.tire_pressure = 0.0
+        # ADC specific values
+        self.car_time = current_time
         self.coolant_temperature = 0.0
         self.battery_voltage = 0.0
         self.fuel_gauge = 0.0
         self.oil_pressure = 0.0
-        self.intake_air_temperature = 0.0
-        self.intake_air_flow = 0.0
+
+        # bluetooth sensors
+        self.tire_pressure = 0.0
 
         # IMU data variables
         self.imu_time = current_time
@@ -87,7 +93,7 @@ class Vehicle:
         self.heartbeat_time = 0
         self.electronics_temperature = 0.0
 
-        self.location_history = [[27.9785,-82.026],[27.979,-82.0255]]
+        self.location_history = deque(maxlen=240)
 
 
     def initialize_port(self):
@@ -206,6 +212,8 @@ class Vehicle:
                                   self.gps_speed,
                                   self.num_satellites,
                                   self.hdop])
+                
+            self.location_history.append([self.lat,self.lon]) # O(1) time complexity for adding new items and removing old ones
 
         elif msg[2] == 0x03:
             print('IMU Data Received')
@@ -244,6 +252,19 @@ class Vehicle:
             # self.dps310_temperature = struct.unpack('<f', bytes(msg[3:7]))[0]
             # # Pressure bytes (float)
             # self.ambient_pressure = struct.unpack('<f', bytes(msg[7:11]))[0]
+        elif msg[2] == 0x05:
+            print('Car Data Received')
+
+            self.battery_voltage = int.from_bytes(bytes(msg[3:5]), 'little')
+            self.fuel_gauge = int.from_bytes(bytes(msg[5:7]), 'little')
+            self.oil_pressure = int.from_bytes(bytes(msg[7:9]), 'little')
+            self.coolant_temperature = int.from_bytes(bytes(msg[9:11]), 'little')
+
+            self.rpm = 60000000/struct.unpack('<f', bytes(msg[11:15]))[0] # data arrives as period measured in us
+            # self.mph = struct.unpack('<f', bytes(msg[15:19]))[0]/1000000 * 1.12 # convert to pulses per second, then scale from 2/(m/s) to get mph
+
+            self.car_time = time.time()
+
             
         return True
 

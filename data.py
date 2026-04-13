@@ -42,7 +42,7 @@ class Data(QWidget):
 
         # since these need to be reference later, along with all of the labels above containing dynamic information, these need
         # to be fields of the object, initialized with self.<name>
-        self.mph = QLabel("-- mph")
+        # self.mph = QLabel("-- mph")
         self.rpm = QLabel("--")
         self.tire_pressure = QLabel("-- psi")
         self.coolant_temperature = QLabel("--")
@@ -52,7 +52,7 @@ class Data(QWidget):
         
         # this object name is purely to set the minimum length of the heading label, to prevent the
         # items moving around when the numbers change
-        self.mph.setObjectName("car_data")
+        # self.mph.setObjectName("car_data")
         self.rpm.setObjectName("car_data")
         self.tire_pressure.setObjectName("car_data")
         self.coolant_temperature.setObjectName("car_data")
@@ -61,7 +61,7 @@ class Data(QWidget):
         self.oil_pressure.setObjectName("car_data")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("Speed: "), QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
+        labels = [QLabel("Engine RPM: "), QLabel("Tire Pressure: "), QLabel("Coolant Temperature: "),
                   QLabel("Battery Voltage: "), QLabel("Fuel Gauge: "), QLabel("Oil Pressure: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
@@ -69,13 +69,13 @@ class Data(QWidget):
             car_info_layout.addWidget(label, i, 0)
 
         # add the information labels to the QGridLayout
-        car_info_layout.addWidget(self.mph, 0, 1)
-        car_info_layout.addWidget(self.rpm, 1, 1)
-        car_info_layout.addWidget(self.tire_pressure, 2, 1)
-        car_info_layout.addWidget(self.coolant_temperature, 3, 1)
-        car_info_layout.addWidget(self.battery_voltage, 4, 1)
-        car_info_layout.addWidget(self.fuel_gauge, 5, 1)
-        car_info_layout.addWidget(self.oil_pressure, 6, 1)
+        # car_info_layout.addWidget(self.mph, 0, 1)
+        car_info_layout.addWidget(self.rpm, 0, 1)
+        car_info_layout.addWidget(self.tire_pressure, 1, 1)
+        car_info_layout.addWidget(self.coolant_temperature, 2, 1)
+        car_info_layout.addWidget(self.battery_voltage, 3, 1)
+        car_info_layout.addWidget(self.fuel_gauge, 4, 1)
+        car_info_layout.addWidget(self.oil_pressure, 5, 1)
 
         # add the "car_info_layout" QFormLayout to the information layout
         information_layout.addLayout(car_info_layout)

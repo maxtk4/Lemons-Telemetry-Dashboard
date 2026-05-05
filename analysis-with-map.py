@@ -15,6 +15,7 @@ gps1 = pd.read_csv("./logs/1777661479.0555258/gps.csv").sort_values("Time")
 imu2 = pd.read_csv("./logs/1777836759.181342/imu.csv").sort_values("Time")
 gps2 = pd.read_csv("./logs/1777836759.181342/gps.csv").sort_values("Time")
 
+
 # Extract arrays
 def unpack(imu, gps):
     return (

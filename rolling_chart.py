@@ -120,34 +120,36 @@ class StreamingLineChart(QWidget):
     # -----------------------------
     def _update_plot(self, current_time):
 
-        # Shared X axis uses whichever stream has data
-        base_data = self.data1 if self.data1 else self.data2
-        if not base_data:
+        if not self.data1 and not self.data2:
             return
-
-        x = [t - current_time for t, _ in base_data]
 
         # --- Stream 1 ---
         if self.data1:
+            x1 = [t - current_time for t, _ in self.data1]
             y1 = [v for _, v in self.data1]
-            self.curve1.setData(x[:len(y1)], y1)
+
+            self.curve1.setData(x1, y1)
 
             ymin, ymax = min(y1), max(y1)
             if ymin == ymax:
                 ymin -= 0.5
                 ymax += 0.5
+
             self.plot_item.vb.setYRange(ymin - 1, ymax + 1, padding=0)
 
         # --- Stream 2 ---
         if self.data2:
+            x2 = [t - current_time for t, _ in self.data2]
             y2 = [v for _, v in self.data2]
-            self.curve2.setData(x[:len(y2)], y2)
+
+            self.curve2.setData(x2, y2)
 
             ymin2, ymax2 = min(y2), max(y2)
             if ymin2 == ymax2:
                 ymin2 -= 0.5
                 ymax2 += 0.5
-            self.vb2.setYRange(ymin2 - 1, ymax2 + 1, padding=0)
+
+            self.vb2.setYRange(-2048, 2048, padding=0)
 
 if __name__ == "__main__":
     import sys

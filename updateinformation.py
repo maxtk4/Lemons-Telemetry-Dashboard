@@ -27,14 +27,17 @@ class UpdateInformation():
 
         # go through all of the different text information displays, and get data from the data_source before formatting it into the display
         # target.mph.setText('{:.1f}'.format(data_source.mph))
-        target.rpm.setText('{:.1f}'.format(data_source.rpm))
-        target.coolant_temperature.setText('{:.1f}'.format(data_source.coolant_temperature))
-        target.battery_voltage.setText('{:.1f}'.format(data_source.battery_voltage))
-        target.fuel_gauge.setText('{:.1f}'.format(data_source.fuel_gauge))
-        target.oil_pressure.setText('{:.1f}'.format(data_source.oil_pressure))
+        target.pit_entry.setText(f"{data_source.pit_entry}")
+        target.coolant_temperature.setText(f"{data_source.coolant_temperature}")
+        target.battery_voltage.setText(f"{data_source.battery_voltage}")
+        target.fuel_gauge.setText(f"{data_source.fuel_gauge}")
+        target.oil_pressure.setText(f"{data_source.oil_pressure}")
 
-        # if (data_source.rpm < 1000) or (data_source.rpm > 6000):
-        #     target.rpm.setStyleSheet("background-color: red;")
+        if (data_source.pit_entry > 3900):
+            target.pit_entry.setStyleSheet("background-color: red;")
+        else:
+            target.pit_entry.setStyleSheet("background-color: white;")
+
         
         # if (data_source.tire_pressure < 10):
         #     target.tire_pressure.setStyleSheet("background-color: red;")
@@ -68,13 +71,12 @@ class UpdateInformation():
         target.num_satellites.setText('{:.0f}'.format(data_source.num_satellites))
 
         # update the acceleration charts
-        target.lateral_accel_chart.add_point_stream1(data_source.imu_time, data_source.accel[0])
+        target.lateral_accel_chart.add_point_stream1(data_source.imu_time, data_source.accel[1])
         target.lateral_accel_chart.add_point_stream2(data_source.driver_time, data_source.steering_angle)
 
-        target.forward_accel_chart.add_point_stream1(data_source.imu_time, data_source.accel[2]) # Z acceleration is forward
-        
-        target.throttle_brake_chart.add_point_stream1(data_source.driver_time, data_source.throttle)
-        target.throttle_brake_chart.add_point_stream2(data_source.driver_time, data_source.brake)
+        target.forward_accel_chart.add_point(data_source.imu_time, data_source.accel[2]) # Z acceleration is forward
+
+        target.throttle_brake_chart.add_point(data_source.imu_time, data_source.accel[0])
 
     @staticmethod
     def updateTopBar(data_source, target):
@@ -146,8 +148,8 @@ class UpdateInformation():
             painter = QPainter(gps_map_data)
             # the QPen is necessary to set the parameters of the shapes drawn using the QPainter
             pen = QPen()
-            pen.setWidth(2)
-            pen.setColor(QColor(0,0,0)) # set it to draw the flight history in black
+            pen.setWidth(3)
+            pen.setColor(QColor(255,0,0)) # set it to draw the drive history in red (so it shows up)
             painter.setPen(pen)
 
             for i in range(len(hist)):
@@ -185,6 +187,31 @@ class UpdateInformation():
                     #
                     # -------------------------------------------------------------------------
                     painter.drawLine(x_1, y_1, x_2, y_2)
+
+            # -------------------------------------------------------------------------
+            #
+            # Draw a circle for the current car location
+            #
+            # -------------------------------------------------------------------------
+            pen.setWidth(4)
+            pen.setColor(QColor(255,0,0)) # set it to draw the current location in white
+            painter.setPen(pen)
+
+            # get the latitude and longitude of the current point
+            if (len(hist) >= 1):
+                lat_1 = hist[-1][0]
+                lon_1 = hist[-1][1]
+                # transform GPS coordinates to match up with the map
+                y_1 = (lat_1-map_top_lat)*(target_height/(map_bottom_lat-map_top_lat))
+                x_1 = (lon_1-map_left_lon)*(target_width/(map_right_lon-map_left_lon))  
+
+                # now we have coordinates from 0-625 and 0-1000 corresponding to the un-zoomed map (as floats)
+                # get the difference between these coordinates and the top left corner of the zoomed in rectangle
+                # then scale by 1/zoom_factor
+                y_1 = (y_1 - top_y)/zoom_factor
+                x_1 = (x_1 - left_x)/zoom_factor
+
+                painter.drawEllipse(x_1-8, y_1-8, 16, 16)
 
             # -------------------------------------------------------------------------
             #

@@ -31,6 +31,7 @@ class Vehicle:
     """
 
     def __init__(self, port=None, baud=None):
+
         # serial port variables
         self.port = port
         self.baud = baud
@@ -41,6 +42,8 @@ class Vehicle:
             self.initialize_port()
 
         self.rx_buffer = bytearray()
+        self.packet_start_time = None
+        self.PACKET_TIMEOUT = 0.5  # seconds
 
         current_time = time.time()
         self.log_folder = f"./logs/{current_time}"
@@ -56,7 +59,7 @@ class Vehicle:
             writer.writerow(['Time','Lat','Lon','Heading','Altitude', 'Speed', 'Satellites', 'HDOP'])
         with open(self.log_folder +"/car.csv", 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['Time','Speed','Engine RPM','Tire Pressure','Coolant Temperature','Battery Voltage','Fuel Gauge', 'Oil Pressure'])
+            writer.writerow(['Time','Engine RPM','Coolant Temperature','Battery Voltage','Fuel Gauge', 'Oil Pressure'])
 
         # vehicle data variables
         
@@ -93,10 +96,17 @@ class Vehicle:
         # Driver Input Sensors
         self.driver_time = current_time
         self.steering_angle = 0.0
-        self.throttle = 0.0
-        self.brake = 0.0
+        self.pit_entry = 0.0
+        # self.brake = 0.0
 
-        self.location_history = deque(maxlen=240)
+        self.location_history = deque(maxlen=60)
+
+        if self.initialized == False:
+            self.location_history.append([29.715,-95.40])
+            self.location_history.append([29.715,-95.405])
+            self.location_history.append([29.717,-95.407])
+            self.location_history.append([29.718,-95.407])
+            self.location_history.append([29.721,-95.405])
 
 
     def initialize_port(self):
@@ -111,76 +121,132 @@ class Vehicle:
             print(f'Error connecting to serial port: {e}')
 
     def process_serial_data(self):
-        """
-        Reads all available bytes from the serial port (self.ser) and processes
-        them to find complete messages.
-        
-        Returns:
-            list: A list of complete messages (as bytes objects) found in this cycle.
-        """
-        # Create a list to hold messages found in this single run
         messages_found = []
 
-        # Read all available data from the serial port
         try:
-            # Check how many bytes are waiting
             waiting = self.ser.in_waiting
             if waiting > 0:
-                # Read all waiting bytes and add them to our persistent buffer
                 new_bytes = self.ser.read(waiting)
                 self.rx_buffer.extend(new_bytes)
-        
+
         except serial.SerialException as e:
             print(f"Serial read error: {e}")
-            # Handle the error appropriately, e.g., close/reopen port
-            return [] # Return empty list on error
+            return []
         except Exception as e:
-            # Handle other potential errors, e.g., port not open
             print(f"Error: {e}")
             return []
 
-        # Process the buffer to find complete messages
         while True:
-            # Find the first occurrence of our start byte
             start_index = self.rx_buffer.find(0xFE)
-            
+
             if start_index == -1:
-                # No start byte found. The buffer contains only partial/garbage data. We'll stop processing and wait for more data to arrive.
-                break 
+                self.packet_start_time = None
+                break
 
-            # If we found a start byte, discard any data before it
+            # Discard garbage before start byte
             if start_index > 0:
-                print(f"Discarding {start_index} bytes of garbage: {self.rx_buffer[:start_index].hex()}")
                 self.rx_buffer = self.rx_buffer[start_index:]
-            
-            # Now, self.rx_buffer[0] == 0xFE. Check if we have the length byte.
+
+            # Start timeout tracking
+            if self.packet_start_time is None:
+                self.packet_start_time = time.monotonic()
+
+            # Timeout check
+            if time.monotonic() - self.packet_start_time > self.PACKET_TIMEOUT:
+                print("Packet timeout — discarding partial data")
+                self.rx_buffer = self.rx_buffer[1:]  # drop start byte
+                self.packet_start_time = None
+                continue
+
             if len(self.rx_buffer) < 2:
-                # We have the start byte, but not the length byte yet. Stop processing and wait for more data.
                 break
 
-            # We have the start byte (1) and length byte (1). This assumes the 2nd byte is the *payload* length.
             payload_len = self.rx_buffer[1]
-            
-            # Calculate the total length of the messag Total Length = Start Byte (1) + Length Byte (1) + Payload (payload_len)
             total_message_len = payload_len
-            
-            # Check if the *entire* message has arrived in our buffer
+
             if len(self.rx_buffer) < total_message_len:
-                # We have the header, but not the full payload yet. Stop processing and wait for the rest of the message.
                 break
 
-            # If we're here, we have a full, complete message!
-            
-            # Extract the message (as a new bytes object)
-            message = bytes(self.rx_buffer[0:total_message_len])
+            # Full packet received
+            message = bytes(self.rx_buffer[:total_message_len])
             messages_found.append(message)
-            
-            # Remove this processed message from the buffer
+
             self.rx_buffer = self.rx_buffer[total_message_len:]
-            
-            # Loop again immediately to see if another complete message is already in the buffer.
-        
+            self.packet_start_time = None  # reset after success
+
         return messages_found
+
+    # def process_serial_data(self):
+    #     """
+    #     Reads all available bytes from the serial port (self.ser) and processes
+    #     them to find complete messages.
+        
+    #     Returns:
+    #         list: A list of complete messages (as bytes objects) found in this cycle.
+    #     """
+    #     # Create a list to hold messages found in this single run
+    #     messages_found = []
+
+    #     # Read all available data from the serial port
+    #     try:
+    #         # Check how many bytes are waiting
+    #         waiting = self.ser.in_waiting
+    #         if waiting > 0:
+    #             # Read all waiting bytes and add them to our persistent buffer
+    #             new_bytes = self.ser.read(waiting)
+    #             self.rx_buffer.extend(new_bytes)
+        
+    #     except serial.SerialException as e:
+    #         print(f"Serial read error: {e}")
+    #         # Handle the error appropriately, e.g., close/reopen port
+    #         return [] # Return empty list on error
+    #     except Exception as e:
+    #         # Handle other potential errors, e.g., port not open
+    #         print(f"Error: {e}")
+    #         return []
+
+    #     # Process the buffer to find complete messages
+    #     while True:
+    #         # Find the first occurrence of our start byte
+    #         start_index = self.rx_buffer.find(0xFE)
+            
+    #         if start_index == -1:
+    #             # No start byte found. The buffer contains only partial/garbage data. We'll stop processing and wait for more data to arrive.
+    #             break 
+
+    #         # If we found a start byte, discard any data before it
+    #         if start_index > 0:
+    #             print(f"Discarding {start_index} bytes of garbage: {self.rx_buffer[:start_index].hex()}")
+    #             self.rx_buffer = self.rx_buffer[start_index:]
+            
+    #         # Now, self.rx_buffer[0] == 0xFE. Check if we have the length byte.
+    #         if len(self.rx_buffer) < 2:
+    #             # We have the start byte, but not the length byte yet. Stop processing and wait for more data.
+    #             break
+
+    #         # We have the start byte (1) and length byte (1). This assumes the 2nd byte is the *payload* length.
+    #         payload_len = self.rx_buffer[1]
+            
+    #         # Calculate the total length of the messag Total Length = Start Byte (1) + Length Byte (1) + Payload (payload_len)
+    #         total_message_len = payload_len
+            
+    #         # Check if the *entire* message has arrived in our buffer
+    #         if len(self.rx_buffer) < total_message_len:
+    #             # We have the header, but not the full payload yet. Stop processing and wait for the rest of the message.
+    #             break
+
+    #         # If we're here, we have a full, complete message!
+            
+    #         # Extract the message (as a new bytes object)
+    #         message = bytes(self.rx_buffer[0:total_message_len])
+    #         messages_found.append(message)
+            
+    #         # Remove this processed message from the buffer
+    #         self.rx_buffer = self.rx_buffer[total_message_len:]
+            
+    #         # Loop again immediately to see if another complete message is already in the buffer.
+        
+    #     return messages_found
 
     def process_message(self, msg):
         # First, the checksum
@@ -207,7 +273,7 @@ class Vehicle:
 
             with open(self.log_folder +"/gps.csv", 'a', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerows([self.gps_time,
+                writer.writerow([self.gps_time,
                                   self.lat,
                                   self.lon,
                                   self.hdg,
@@ -238,7 +304,7 @@ class Vehicle:
             
             with open(self.log_folder +"/imu.csv", 'a', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerows([self.imu_time,
+                writer.writerow([self.imu_time,
                                   self.accel[0],
                                   self.accel[1],
                                   self.accel[2],
@@ -267,6 +333,25 @@ class Vehicle:
             # self.mph = struct.unpack('<f', bytes(msg[15:19]))[0]/1000000 * 1.12 # convert to pulses per second, then scale from 2/(m/s) to get mph
 
             self.car_time = time.time()
+
+            with open(self.log_folder +"/car.csv", 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([self.car_time,
+                                 self.rpm,
+                                 self.coolant_temperature,
+                                 self.battery_voltage,
+                                 self.fuel_gauge,
+                                 self.oil_pressure])
+        elif msg[2] == 0x06:
+            print('Driver Input Data Received')
+
+            self.steering_angle = int.from_bytes(bytes(msg[3:5]), 'little') - 2048
+            self.pit_entry = int.from_bytes(bytes(msg[5:7]), 'little')
+            # self.brake = int.from_bytes(bytes(msg[7:9]), 'little')
+
+            self.driver_time = time.time()
+
+
 
             
         return True

@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from rolling_chart import StreamingLineChart
+from rolling_chart_one_item import StreamingLineChartOneItem
 
 class Data(QWidget):
     def __init__(self):
@@ -43,7 +44,7 @@ class Data(QWidget):
         # since these need to be reference later, along with all of the labels above containing dynamic information, these need
         # to be fields of the object, initialized with self.<name>
         # self.mph = QLabel("-- mph")
-        self.rpm = QLabel("--")
+        self.pit_entry = QLabel("--")
         self.coolant_temperature = QLabel("--")
         self.battery_voltage = QLabel("-- volts")
         self.fuel_gauge = QLabel("--")
@@ -52,14 +53,14 @@ class Data(QWidget):
         # this object name is purely to set the minimum length of the heading label, to prevent the
         # items moving around when the numbers change
         # self.mph.setObjectName("car_data")
-        self.rpm.setObjectName("car_data")
+        self.pit_entry.setObjectName("car_data")
         self.coolant_temperature.setObjectName("car_data")
         self.battery_voltage.setObjectName("car_data")
         self.fuel_gauge.setObjectName("car_data")
         self.oil_pressure.setObjectName("car_data")
 
         # create labels as an array to efficiently add them to the QGridLayout
-        labels = [QLabel("Engine RPM: "), QLabel("Coolant Temperature: "),
+        labels = [QLabel("Pit Entry Switch: "), QLabel("Coolant Temperature: "),
                   QLabel("Battery Voltage: "), QLabel("Fuel Gauge: "), QLabel("Oil Pressure: ")]
         # iterate through the labels, setting the object name as 'small' and then adding to the appropriate row
         for i, label in enumerate(labels):
@@ -68,7 +69,7 @@ class Data(QWidget):
 
         # add the information labels to the QGridLayout
         # car_info_layout.addWidget(self.mph, 0, 1)
-        car_info_layout.addWidget(self.rpm, 0, 1)
+        car_info_layout.addWidget(self.pit_entry, 0, 1)
         car_info_layout.addWidget(self.coolant_temperature, 1, 1)
         car_info_layout.addWidget(self.battery_voltage, 2, 1)
         car_info_layout.addWidget(self.fuel_gauge, 3, 1)
@@ -87,11 +88,11 @@ class Data(QWidget):
         self.lateral_accel_chart.resize(425, 150)
         information_layout.addWidget(self.lateral_accel_chart)
 
-        self.forward_accel_chart = StreamingLineChart(window_seconds=30, label1="Forward Acceleration")
+        self.forward_accel_chart = StreamingLineChartOneItem(window_seconds=30, data_label="Forward Acceleration")
         self.forward_accel_chart.resize(425, 150)
         information_layout.addWidget(self.forward_accel_chart)
 
-        self.throttle_brake_chart = StreamingLineChart(window_seconds=30, label1="Throttle Input", label2="Brake Input")
+        self.throttle_brake_chart = StreamingLineChartOneItem(window_seconds=30, data_label="Vertical Acceleration")
         self.throttle_brake_chart.resize(425, 150)
         information_layout.addWidget(self.throttle_brake_chart)
 
